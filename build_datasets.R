@@ -151,11 +151,10 @@ csds_contacts_2022_23_icb_summary |>
 
 # Population projections data ---------------------------------------------
 
-
-ppp_locn <- "/Volumes/su_data/nhp/population-projections/demographic_data"
-
+pps_folder <- "/Volumes/su_data/nhp/population-projections/demographic_data/"
+ppp_location <- paste0(pps_folder, "projection=principal_proj")
 popn_proj_orig <- sconn::sc() |>
-  sparklyr::spark_read_parquet("popn_proj_data", ppp_locn)
+  sparklyr::spark_read_parquet("popn_proj_data", ppp_location)
 
 # 1,305,304 rows
 popn_proj_tidy <- popn_proj_orig |>

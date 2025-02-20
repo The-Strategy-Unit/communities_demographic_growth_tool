@@ -89,3 +89,6 @@ venv.bak/
 *.parquet
 *.rds
 *.xml
+
+# Quarto output
+*.html
