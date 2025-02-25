@@ -173,8 +173,45 @@ popn_proj_tidy <- popn_proj_orig |>
     dplyr::across(c("age_int", "cal_yr"), as.integer),
     dplyr::across("value", as.numeric)
   ) |>
-  dplyr::arrange(pick("cal_yr"))
+  # This arrange() step is crucial for the calculation of growth coefficients
+  # in future steps, using lead() and first().
+  dplyr::arrange(dplyr::pick("cal_yr")) |>
+  readr::write_rds("popn_proj_tidy.rds")
 
 
-saveRDS(popn_proj_tidy, "popn_proj_tidy.rds")
-popn_proj_tidy <- readRDS("popn_proj_tidy.rds")
+
+
+# Calculate growth coefficients per financial year ------------------------
+
+
+
+# 1,245,972 rows
+popn_fy_projected <- readr::read_rds("popn_proj_tidy.rds") |>
+  dplyr::mutate(
+    fin_year = paste0(.data[["cal_yr"]], "_", dplyr::lead(.data[["cal_yr"]]) %% 100),
+    fin_year_popn = (.data[["value"]] * 0.75) + (dplyr::lead(.data[["value"]]) * 0.25),
+    growth_coeff = .data[["fin_year_popn"]] / dplyr::first(.data[["fin_year_popn"]]),
+    .by = tidyselect::all_of(c("lad18cd", "age_int", "gender_cat")),
+    .keep = "unused"
+  ) |>
+  dplyr::filter(!dplyr::if_any("fin_year_popn", is.na))
+
+
+
+# Calculate projected community contacts ----------------------------------
+
+join_popn_proj_data <- function(x, y = popn_fy_projected) {
+  x |>
+    dplyr::left_join(y, join_cols) |>
+    dplyr::mutate(
+      projected_contacts = .data[["contacts"]] * .data[["growth_coeff"]],
+      .keep = "unused"
+    )
+}
+
+
+contacts_fy_projected_icb <- readr::read_rds("csds_contacts_icb_summary.rds") |>
+  # Nesting creates a list-col "data", with a single tibble per row (per ICB)
+  tidyr::nest(.by = tidyselect::all_of(c(icb_cols, dq_cols))) |>
+  dplyr::mutate(across("data", \(x) purrr::map(x, join_popn_proj_data))) |>
+  readr::write_rds("contacts_fy_projected_icb.rds")
