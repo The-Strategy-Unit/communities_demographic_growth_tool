@@ -1,0 +1,18 @@
+Package: CSDSDemographicGrowthApp
+Title: Exploring the impact of demographic growth on community services demand.
+Version: 0.0.0.9000
+Authors@R: 
+    person("Francis", "Barton", , "francis.barton@nhs.net", role = c("aut", "cre"),
+           "Rhian", "Davies", , "rhian.davies25@nhs.net", role = "aut",
+          person("The Strategy Unit", role = "fnd"))
+Description: A shiny application to show the impact of demographic growth on community services using the CSDS dataset.
+License: MIT + file LICENSE
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.1
+Depends: 
+    R (>= 4.1)
+LazyData: true
+Imports: 
+    bslib,
+    shiny

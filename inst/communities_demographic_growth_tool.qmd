@@ -171,15 +171,12 @@ add_broad_age_groups <- function(.data) {
 }
 
 
-
 ```
 
 
 ```{r data-quality}
 
 # Data quality calculations go here, before we filter to consistent only.
-
-
 
 ```
 
@@ -235,8 +232,6 @@ national_contacts |>
   )
 
 
-
-
 ```
 
 
@@ -283,7 +278,6 @@ icb_contacts |>
   ) +
   scale_colour_su(name = "Age group") +
   su_chart_theme()
-
 
 
 ```
@@ -345,7 +339,6 @@ list(national = national_contacts, icb = icb_contacts) |>
 ```
 
 
-
 ## Contacts per 1000 population, 2022/23, by age group
 
 ```{r charts4}
@@ -384,6 +377,5 @@ list(national = national_contacts, icb = icb_contacts) |>
     legend.position.inside = c(0.15, 0.72),
     legend.text = element_text(margin = margin(l = 6), hjust = 0)
   )
-
 
 ```
