@@ -1,6 +1,4 @@
-
 # Helper functions --------------------------------------------------------
-
 
 read_in_jg_data <- function(table_name) {
   sconn::sc() |>
@@ -12,9 +10,7 @@ read_in_reference_data <- function(table_name) {
 }
 
 
-
 # Read in data tables -----------------------------------------------------
-
 
 # CSDS data as prepared by JG
 # Contains 191mn rows
@@ -28,8 +24,6 @@ consistent_submitters <- here::here("consistent_submitters_2022_23.csv") |>
 icb_cols <- c("icb22cdh", "icb22nm")
 dq_cols <- c("consistent", "attendance_status")
 join_cols <- c("lad18cd", "age_int", "gender_cat")
-
-
 
 
 # 111,079 rows
@@ -88,23 +82,24 @@ popn_proj_tidy <- popn_proj_orig |>
   readr::write_rds("popn_proj_tidy.rds")
 
 
-
-
 # Calculate growth coefficients per financial year ------------------------
-
-
 
 # 1,245,972 rows
 popn_fy_projected <- readr::read_rds("popn_proj_tidy.rds") |>
   dplyr::mutate(
-    fin_year = paste0(.data[["cal_yr"]], "_", dplyr::lead(.data[["cal_yr"]]) %% 100),
-    fin_year_popn = (.data[["value"]] * 0.75) + (dplyr::lead(.data[["value"]]) * 0.25),
-    growth_coeff = .data[["fin_year_popn"]] / dplyr::first(.data[["fin_year_popn"]]),
+    fin_year = paste0(
+      .data[["cal_yr"]],
+      "_",
+      dplyr::lead(.data[["cal_yr"]]) %% 100
+    ),
+    fin_year_popn = (.data[["value"]] * 0.75) +
+      (dplyr::lead(.data[["value"]]) * 0.25),
+    growth_coeff = .data[["fin_year_popn"]] /
+      dplyr::first(.data[["fin_year_popn"]]),
     .by = tidyselect::all_of(c("lad18cd", "age_int", "gender_cat")),
     .keep = "unused"
   ) |>
   dplyr::filter(!dplyr::if_any("fin_year_popn", is.na))
-
 
 
 # Calculate projected community contacts ----------------------------------
@@ -124,4 +119,6 @@ contacts_fy_projected_icb <- readr::read_rds("csds_contacts_icb_summary.rds") |>
   # Nesting creates a list-col "data", with a single tibble per row (per ICB)
   tidyr::nest(.by = tidyselect::all_of(c(icb_cols, dq_cols))) |>
   dplyr::mutate(across("data", \(x) purrr::map(x, join_popn_proj_data))) |>
-  readr::write_rds("contacts_fy_projected_icb.rds")
+  tidyr::unnest(cols = data)
+
+usethis::use_data(contacts_fy_projected_icb, compress = "xz")
