@@ -1,6 +1,6 @@
 # Community Services Demographic Growth Tool
 
-A Shiny app that combines Community activity recorded in 2022-23, from the NHS England Community Services Dataset (CSDS), as a baseline, with ONS population projections to 2043, to provide projected usage of community services.
+A Shiny app that combines Community activity recorded in 2022-23, from the NHS England Community Services Dataset (CSDS), as a baseline, with [ONS subnational population projections](https://www.ons.gov.uk/peoplepopulationandcommunity/populationandmigration/populationprojections/bulletins/subnationalpopulationprojectionsforengland/previousReleases) to 2043, to provide projected usage of community services.
 
 Projections are reported by financial year.
 The app provides breakdowns of the data:
