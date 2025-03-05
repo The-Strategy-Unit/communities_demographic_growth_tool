@@ -9,7 +9,6 @@ read_in_reference_data <- function(table_name) {
     dplyr::tbl(dbplyr::in_catalog("strategyunit", "default", table_name))
 }
 
-
 # Read in data tables -----------------------------------------------------
 
 # CSDS data as prepared by JG

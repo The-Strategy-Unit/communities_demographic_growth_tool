@@ -35,7 +35,6 @@ knitr:
 
 ```
 
-
 ```{r setup}
 library(dplyr)
 library(forcats)
@@ -45,9 +44,14 @@ library(gt)
 library(ragg)
 library(rlang)
 library(scales)
+library(sf)
+library(sfext)
+library(smoothr)
 library(StrategyUnitTheme)
 library(stringr)
 library(systemfonts)
+library(tibble)
+library(tidyr)
 
 selected_icb <- "QUA" # Black Country
 
@@ -65,6 +69,11 @@ icb_name <- icb_data[["icb22nm"]]
 
 
 text_grey <- "#3e3f3a" # sandstone theme default text colour
+
+source("icb_hexmap.R")
+
+icb_hexes <- icb_hexes |>
+  dplyr::rename_with(\(x) sub("icb23", "icb22", x))
 
 su_chart_theme <- function(font_family = "Segoe UI") {
   text_grey <- "#3e3f3a"
@@ -305,7 +314,6 @@ create_main_projection_chart <- function(.data, label) {
     su_chart_theme()
 }
 
-
 create_main_projection_chart(nat_contacts_data, "national")
 
 ```
@@ -406,6 +414,107 @@ list(nat_contacts_data, icb_contacts_data) |>
   ) +
   scale_fill_su(name = NULL) +
   su_chart_theme()
+```
 
+
+## ICB maps
+
+```{r maps1}
+#| fig-height: 23.33
+
+icb_hexmap <- function(.data, fill_col) {
+  font_family = "Segoe UI"
+  text_grey <- "#3e3f3a"
+  light_bkg <- "#faf0e6" # aka "linen"
+  dark_slate <- su_theme_cols("dark_slate")
+  .data |>
+    ggplot2::ggplot() +
+    ggplot2::geom_sf(
+      data = england_shape,
+      fill = NA,
+      colour = "grey90",
+      linewidth = 1.6,
+      alpha = 0.3
+    ) +
+    ggplot2::geom_sf(aes(fill = {{ fill_col }}), colour = "grey80") +
+    ggplot2::geom_sf(
+      data = region_clusters,
+      fill = NA,
+      colour = "grey30",
+      linewidth = 1
+    ) +
+    ggplot2::theme_void() +
+    ggplot2::theme(
+      text = element_text(family = font_family, size = 20, colour = text_grey),
+      title = element_text(hjust = 0.05),
+      plot.title = element_text(size = 28, margin = margin(20, 8, 12, 18)),
+      plot.subtitle = element_text(margin = margin(2, 0, 12, 20)),
+      plot.caption = element_text(
+        hjust = 0.96,
+        size = 16,
+        margin = margin(12, 6, 6, 0)
+      ),
+      plot.title.position = "plot",
+      plot.caption.position = "plot",
+      plot.background = element_rect(fill = light_bkg, colour = NA),
+      panel.background = element_rect(fill = light_bkg),
+      legend.title = element_text(hjust = 0, margin = margin(b = 8)),
+      legend.background = element_rect(fill = light_bkg, colour = light_bkg),
+      legend.key = element_rect(fill = light_bkg),
+      strip.background = element_rect(fill = dark_slate),
+      strip.text = element_text(
+        size = 24,
+        colour = "grey95",
+        margin = margin(t = 6, b = 6)
+      )
+    )
+}
+
+
+projected_contacts_by_icb <- contacts_data |>
+  tidyr::unnest("data") |>
+  dplyr::filter(if_any("fin_year", \(x) grepl("^20[24]2", x))) |>
+  add_broad_age_groups() |>
+  dplyr::summarise(
+    value = sum(.data[["projected_contacts"]]),
+    .by = c("icb22cdh", "icb22nm", "fin_year", "broad_age_cat")
+  ) |>
+  tidyr::pivot_wider(
+    id_cols = c("icb22cdh", "icb22nm", "broad_age_cat"),
+    names_from = "fin_year",
+    names_prefix = "yr_"
+  ) |>
+  dplyr::mutate(
+    pct_change = (.data[["yr_2042_43"]] - .data[["yr_2022_23"]]) *
+      100 / .data[["yr_2022_23"]],
+    .keep = "unused"
+  )
+
+icb_hexes |>
+  dplyr::left_join(projected_contacts_by_icb, c("icb22cdh", "icb22nm")) |>
+  icb_hexmap(pct_change) +
+  ggplot2::scale_fill_viridis_c(
+    name = "% change",
+    option = "B",
+    direction = -1,
+    guide = ggplot2::guide_colourbar(
+      direction = "horizontal",
+      position = "bottom",
+      barwidth = unit(120, "mm"),
+      theme = ggplot2::theme(legend.title.position = "top")
+    )
+  ) +
+  ggplot2::labs(
+    title = "Projected % change in total contacts, by age group, 2022/23 - 2042/43",
+    subtitle = sub_wrap(
+      "This chart shows the projected change within each broad age group for",
+      "the 42 ICBs in England"
+    ),
+    caption = sub_wrap(
+      "Sources: NHS England Community Services Dataset (2022-23),",
+      "ONS Population projections, ONS OpenGeography"
+    )
+  ) +
+  ggplot2::facet_wrap(dplyr::vars(broad_age_cat), nrow = 2)
 
 ```
