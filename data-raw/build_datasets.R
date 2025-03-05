@@ -223,5 +223,6 @@ icb_projected_contacts_fy <- readr::read_rds("csds_contacts_icb_summary.rds") |>
   dplyr::filter(!dplyr::if_any("icb22cdh", is.na)) |>
   tidyr::nest(.by = c(tidyselect::all_of(icb_cols))) |>
   dplyr::mutate(across("data", \(x) purrr::map(x, join_popn_proj_data))) |>
-  tidyr::hoist("data", !!!hoist_cols, .transform = unique) |>
-  readr::write_rds("icb_projected_contacts_fy.rds")
+  tidyr::hoist("data", !!!hoist_cols, .transform = unique)
+
+usethis::use_data(contacts_fy_projected_icb, compress = "xz")

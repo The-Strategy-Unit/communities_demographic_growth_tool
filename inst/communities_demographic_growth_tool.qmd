@@ -196,7 +196,6 @@ add_broad_age_groups <- function(.data) {
 }
 
 
-
 ```
 
 ### Data quality summary (national)
@@ -379,7 +378,6 @@ list(nat_contacts_data, icb_contacts_data) |>
   su_chart_theme()
 
 ```
-
 
 
 ## Contacts per 1000 population, 2022/23, by age group
