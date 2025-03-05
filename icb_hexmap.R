@@ -1,4 +1,3 @@
-
 # icb_rgn_lookup <- boundr::lookup("icb", "nhser", lookup_year = 2023, opts = boundr::opts(return_width = "full", query_option = 1)) |>
 #   dplyr::select(tidyselect::matches("^(icb|nhs)")) |>
 #   dplyr::distinct() |>
@@ -91,9 +90,9 @@ icb_hexes <- c(
   dplyr::left_join(icb_rgn_lookup, c("icb23cd", "icb23nm", "icb23cdh"))
 
 # Shift slightly north and west
-icb_hexes <- sfext::st_nudge(icb_hexes, nudge_x = 1e4, nudge_y = -3e3)
+icb_hexes <- sfext::st_nudge(icb_hexes, nudge_x = 9e3, nudge_y = -3e3)
 region_clusters <- icb_hexes |>
   dplyr::summarise(across("geometry", sf::st_union), .by = "nhser23nm")
 
 icb_hexes <- icb_hexes |>
-  dplyr::select(!c(tidyselect::starts_with("nhser"), "icb23cd"))
+  dplyr::select(!c(tidyselect::starts_with("nhser"), "icb23cd", "icb23nm"))
