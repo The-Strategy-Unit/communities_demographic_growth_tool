@@ -129,7 +129,6 @@ join_popn_proj_data <- function(dat, y = popn_fy_projected) {
   join_cols <- c("lad18cd", "age_int", "gender_cat")
   sum_con <- \(x) sum(x[["contacts"]])
   all_icb_contacts <- sum_con(dat)
-  missing_lad <- sum_con(dplyr::filter(dat, dplyr::if_any("lad18cd", is.na)))
   missing_gen <- sum_con(dplyr::filter(dat, dplyr::if_any("gender_cat", is.na)))
   missing_age <- sum_con(dplyr::filter(dat, dplyr::if_any("age_int", is.na)))
   inconsistnt <- sum_con(dplyr::filter(dat, !dplyr::if_any("consistent")))
@@ -181,7 +180,6 @@ join_popn_proj_data <- function(dat, y = popn_fy_projected) {
       icb_contacts_all_unfiltd = all_icb_contacts,
       icb_contacts_missing_gen = missing_gen,
       icb_contacts_missing_age = missing_age,
-      icb_contacts_missing_lad = missing_lad,
       icb_contacts_inconsistnt = inconsistnt,
       icb_contacts_nt_attended = not_attnded,
       icb_contacts_canclld_unk = canclld_unk,
