@@ -134,12 +134,12 @@ join_popn_proj_data <- function(dat, y = popn_fy_projected) {
   inconsistnt <- sum_con(dplyr::filter(dat, !dplyr::if_any("consistent")))
   not_attnded <- dat |>
     dplyr::filter(
-    dplyr::if_any("attendance_status", \(x) x == "Did Not Attend")
+      dplyr::if_any("attendance_status", \(x) x == "Did Not Attend")
     ) |>
     sum_con()
   canclld_unk <- dat |>
     dplyr::filter(
-    dplyr::if_any("attendance_status", \(x) x %in% c("Cancelled", "Unknown"))
+      dplyr::if_any("attendance_status", \(x) x %in% c("Cancelled", "Unknown"))
     ) |>
     sum_con()
 
@@ -215,4 +215,9 @@ contacts_fy_projected_icb <- readr::read_rds("csds_contacts_icb_summary.rds") |>
   dplyr::mutate(across("data", \(x) purrr::map(x, join_popn_proj_data))) |>
   tidyr::hoist("data", !!!hoist_cols, .transform = unique)
 
-usethis::use_data(contacts_fy_projected_icb, internal = TRUE, compress = "xz")
+usethis::use_data(
+  contacts_fy_projected_icb,
+  internal = TRUE,
+  compress = "xz",
+  overwrite = TRUE
+)
