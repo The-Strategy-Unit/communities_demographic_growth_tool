@@ -1,7 +1,17 @@
-# Community Services Dataset (CSDS) process
+# Community Services Demographic Growth Tool
 
-A project to pull in, explore and process NHS England CSDS data from databricks storage, to create a "silver" dataset.
+A Shiny app that combines Community activity recorded in 2022-23, from the NHS England Community Services Dataset (CSDS), as a baseline, with ONS population projections to 2043, to provide projected usage of community services.
 
-### keywords
+Projections are reported by financial year.
+The app provides breakdowns of the data:
 
-databricks, R, csds
+* by ICB, as well as providing national figures
+* by age group.
+
+## Notes
+
+It is important to note that the population figures provided by the ONS are projections, not predictions.
+This means that they do not take into account potential changes in national policy around migration, for example, or the risk of major events such as pandemics or climatic events.
+The projection used is the principal projection.
+
+The app does not take into account non-demographic change such as mitigations; it is a projection based on 2022/23 recorded activity only.
