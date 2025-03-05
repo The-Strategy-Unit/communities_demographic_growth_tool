@@ -187,13 +187,32 @@ join_popn_proj_data <- function(dat, y = popn_fy_projected) {
       icb_contacts_canclld_unk = canclld_unk,
       icb_contacts_final_count = icb_contacts_filt,
       .before = 1
-    )
+    ) |>
+    dplyr::arrange(dplyr::pick(c("fin_year", "age_int")))
 }
 
+hoist_cols <- c(
+  "icb_contacts_all_unfiltd",
+  "icb_contacts_missing_gen",
+  "icb_contacts_missing_age",
+  "icb_contacts_inconsistnt",
+  "icb_contacts_not_attnded",
+  "icb_contacts_canclld_unk",
+  "icb_contacts_final_count"
+)
 
 contacts_fy_projected_icb <- readr::read_rds("csds_contacts_icb_summary.rds") |>
-  tidyr::nest(.by = tidyselect::all_of(icb_cols)) |>
+  # fmt: skip
+  dplyr::mutate(
+    all_contacts_missing_icb = sum(dplyr::if_else(
+      is.na(.data$icb22cdh), .data$contacts, 0L
+    ))
+  ) |>
+  dplyr::filter(!dplyr::if_any("icb22cdh", is.na)) |>
+  tidyr::nest(
+    .by = c(tidyselect::all_of(icb_cols), "all_contacts_missing_icb")
+  ) |>
   dplyr::mutate(across("data", \(x) purrr::map(x, join_popn_proj_data))) |>
-  tidyr::unnest(cols = data)
+  tidyr::hoist("data", !!!hoist_cols, .transform = unique)
 
 usethis::use_data(contacts_fy_projected_icb, internal = TRUE, compress = "xz")
