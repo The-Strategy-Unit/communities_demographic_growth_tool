@@ -132,14 +132,16 @@ join_popn_proj_data <- function(dat, y = popn_fy_projected) {
   missing_gen <- sum_con(dplyr::filter(dat, dplyr::if_any("gender_cat", is.na)))
   missing_age <- sum_con(dplyr::filter(dat, dplyr::if_any("age_int", is.na)))
   inconsistnt <- sum_con(dplyr::filter(dat, !dplyr::if_any("consistent")))
-  not_attnded <- sum_con(dplyr::filter(
-    dat,
+  not_attnded <- dat |>
+    dplyr::filter(
     dplyr::if_any("attendance_status", \(x) x == "Did Not Attend")
-  ))
-  canclld_unk <- sum_con(dplyr::filter(
-    dat,
+    ) |>
+    sum_con()
+  canclld_unk <- dat |>
+    dplyr::filter(
     dplyr::if_any("attendance_status", \(x) x %in% c("Cancelled", "Unknown"))
-  ))
+    ) |>
+    sum_con()
 
   dat_filtered <- dat |>
     dplyr::filter(
@@ -166,7 +168,7 @@ join_popn_proj_data <- function(dat, y = popn_fy_projected) {
       .by = c("fin_year", "age_int")
     ) |>
     dplyr::rename(
-      icb_popn_by_fy_age = "fin_year_popn",
+      icb_proj_popn_by_fy_age = "fin_year_popn",
       icb_proj_contacts_by_fy_age = "projected_contacts"
     )
 
@@ -181,7 +183,7 @@ join_popn_proj_data <- function(dat, y = popn_fy_projected) {
       icb_contacts_missing_gen = missing_gen,
       icb_contacts_missing_age = missing_age,
       icb_contacts_inconsistnt = inconsistnt,
-      icb_contacts_nt_attended = not_attnded,
+      icb_contacts_not_attnded = not_attnded,
       icb_contacts_canclld_unk = canclld_unk,
       icb_contacts_final_count = icb_contacts_filt,
       .before = 1
