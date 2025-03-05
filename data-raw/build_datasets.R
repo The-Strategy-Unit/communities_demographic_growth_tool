@@ -15,6 +15,7 @@ read_in_reference_data <- function(table_name) {
 # CSDS data as prepared by JG
 # Contains 191mn rows
 # Data for each care contact from 2021-04-01 to 2023-03-31
+# 2022/23 data: 96,647,105 rows
 csds_data_full_valid <- read_in_jg_data("full_contact_based_valid")
 lsoa11_lad18_lookup_eng <- read_in_reference_data("lsoa11_lad18_lookup_eng")
 consistent_submitters <- here::here("consistent_submitters_2022_23.csv") |>
@@ -23,19 +24,30 @@ consistent_submitters <- here::here("consistent_submitters_2022_23.csv") |>
 
 icb_cols <- c("icb22cdh", "icb22nm")
 dq_cols <- c("consistent", "attendance_status")
+tt <- "team_type"
 join_cols <- c("lad18cd", "age_int", "gender_cat")
 
 
-# 111,079 rows
+# https://www.datadictionary.nhs.uk/data_elements/attendance_status.html
+# 5 - attended on time
+# 6 - attended late but was seen
+# 7 - attended late and was not seen
+# 2 - patient cancelled
+# 3 - DNA (without notice)
+# 4 - provider cancelled or postponed
+
+# 456,992 rows
 csds_contacts_2022_23_icb_summary <- csds_data_full_valid |>
   dplyr::filter(dplyr::if_any("Der_Financial_Year", \(x) x == "2022/23")) |>
-  dplyr::rename(
+  dplyr::select(
+    "icb22cdh",
+    "icb22nm",
     age_int = "AgeYr_Contact_Date",
     gender_cat = "Gender",
     lsoa11cd = "Der_Postcode_yr2011_LSOA",
-    contact_date = "Contact_Date",
     submitter_id = "OrgID_Provider",
-    attendance_status = "AttendanceOutcomeSU"
+    attendance_status = "AttendanceOutcomeSU",
+    team_type = "TeamTypeDescription"
   ) |>
   dplyr::left_join(lsoa11_lad18_lookup_eng, "lsoa11cd") |>
   dplyr::mutate(
@@ -44,7 +56,7 @@ csds_contacts_2022_23_icb_summary <- csds_data_full_valid |>
     .keep = "unused"
   ) |>
   dplyr::count(
-    dplyr::pick(tidyselect::all_of(c(icb_cols, dq_cols, join_cols))),
+    dplyr::pick(tidyselect::all_of(c(icb_cols, dq_cols, tt, join_cols))),
     name = "contacts"
   ) |>
   dplyr::collect() |>
