@@ -53,6 +53,15 @@ csds_contacts_2022_23_icb_summary <- csds_data_full_valid |>
   dplyr::mutate(
     consistent = (submitter_id %in% {{ consistent_submitters }}),
     dplyr::across("age_int", \(x) dplyr::if_else(x > 90L, 90L, x)),
+    dplyr::across("gender_cat", \(x) dplyr::if_else(x == "Unknown", NA, x)),
+    dplyr::across("attendance_status", \(x) {
+      dplyr::case_when(
+        x %in% c("5", "6") ~ "Attended",
+        x %in% c("3", "7") ~ "Did Not Attend",
+        x %in% c("2", "4") ~ "Cancelled",
+        .default = "Unknown"
+      )
+    }),
     .keep = "unused"
   ) |>
   dplyr::count(
@@ -183,8 +192,7 @@ join_popn_proj_data <- function(dat, y = popn_fy_projected) {
 
 
 contacts_fy_projected_icb <- readr::read_rds("csds_contacts_icb_summary.rds") |>
-  # Nesting creates a list-col "data", with a single tibble per row (per ICB)
-  tidyr::nest(.by = tidyselect::all_of(c(icb_cols, dq_cols))) |>
+  tidyr::nest(.by = tidyselect::all_of(icb_cols)) |>
   dplyr::mutate(across("data", \(x) purrr::map(x, join_popn_proj_data))) |>
   tidyr::unnest(cols = data)
 
