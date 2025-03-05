@@ -196,4 +196,4 @@ contacts_fy_projected_icb <- readr::read_rds("csds_contacts_icb_summary.rds") |>
   dplyr::mutate(across("data", \(x) purrr::map(x, join_popn_proj_data))) |>
   tidyr::unnest(cols = data)
 
-usethis::use_data(contacts_fy_projected_icb, compress = "xz")
+usethis::use_data(contacts_fy_projected_icb, internal = TRUE, compress = "xz")
