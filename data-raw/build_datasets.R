@@ -6,7 +6,7 @@ read_in_jg_data <- function(table_name) {
 }
 read_in_reference_data <- function(table_name) {
   sconn::sc() |>
-    dplyr::tbl(dbplyr::in_catalog("su_data", "reference", table_name))
+    dplyr::tbl(dbplyr::in_catalog("strategyunit", "default", table_name))
 }
 
 
