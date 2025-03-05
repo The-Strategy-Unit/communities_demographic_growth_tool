@@ -116,14 +116,69 @@ popn_fy_projected <- readr::read_rds("popn_proj_tidy.rds") |>
 
 # Calculate projected community contacts ----------------------------------
 
-join_popn_proj_data <- function(x, y = popn_fy_projected) {
-  x |>
-    dplyr::left_join(y, join_cols) |>
+join_popn_proj_data <- function(dat, y = popn_fy_projected) {
+  join_cols <- c("lad18cd", "age_int", "gender_cat")
+  sum_con <- \(x) sum(x[["contacts"]])
+  all_icb_contacts <- sum_con(dat)
+  missing_lad <- sum_con(dplyr::filter(dat, dplyr::if_any("lad18cd", is.na)))
+  missing_gen <- sum_con(dplyr::filter(dat, dplyr::if_any("gender_cat", is.na)))
+  missing_age <- sum_con(dplyr::filter(dat, dplyr::if_any("age_int", is.na)))
+  inconsistnt <- sum_con(dplyr::filter(dat, !dplyr::if_any("consistent")))
+  not_attnded <- sum_con(dplyr::filter(
+    dat,
+    dplyr::if_any("attendance_status", \(x) x == "Did Not Attend")
+  ))
+  canclld_unk <- sum_con(dplyr::filter(
+    dat,
+    dplyr::if_any("attendance_status", \(x) x %in% c("Cancelled", "Unknown"))
+  ))
+
+  dat_filtered <- dat |>
+    dplyr::filter(
+      dplyr::if_all(tidyselect::all_of(join_cols), \(x) !is.na(x)) &
+        dplyr::if_any("attendance_status", \(x) x == "Attended") &
+        dplyr::if_any("consistent")
+    ) |>
+    dplyr::summarise(
+      across("contacts", sum),
+      .by = c(tidyselect::all_of(join_cols), "team_type")
+    )
+  icb_contacts_filt <- sum_con(dat_filtered)
+
+  projected_contacts_by_fy <- dat_filtered |>
+    dplyr::left_join(y, join_cols, relationship = "many-to-many") |>
     dplyr::mutate(
       projected_contacts = .data[["contacts"]] * .data[["growth_coeff"]],
       .keep = "unused"
+    )
+
+  fy_age_summary <- projected_contacts_by_fy |>
+    dplyr::summarise(
+      across(c("fin_year_popn", "projected_contacts"), sum),
+      .by = c("fin_year", "age_int")
     ) |>
-    dplyr::select(!c("lad18cd")) # possibly drop gender_cat also?
+    dplyr::rename(
+      icb_popn_by_fy_age = "fin_year_popn",
+      icb_proj_contacts_by_fy_age = "projected_contacts"
+    )
+
+  projected_contacts_by_fy |>
+    dplyr::summarise(
+      across("projected_contacts", sum),
+      .by = c("fin_year", "age_int", "team_type")
+    ) |>
+    dplyr::left_join(fy_age_summary, c("fin_year", "age_int")) |>
+    dplyr::mutate(
+      icb_contacts_all_unfiltd = all_icb_contacts,
+      icb_contacts_missing_gen = missing_gen,
+      icb_contacts_missing_age = missing_age,
+      icb_contacts_missing_lad = missing_lad,
+      icb_contacts_inconsistnt = inconsistnt,
+      icb_contacts_nt_attended = not_attnded,
+      icb_contacts_canclld_unk = canclld_unk,
+      icb_contacts_final_count = icb_contacts_filt,
+      .before = 1
+    )
 }
 
 
