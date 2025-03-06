@@ -270,7 +270,6 @@ icb_data |>
 
 ```
 
-
 ## National contacts projection by financial year
 
 
@@ -468,7 +467,6 @@ list(nat_contacts_data, icb_contacts_data) |>
   su_chart_theme()
 
 ```
-
 
 
 ## ICB hexmaps
