@@ -45,10 +45,12 @@ plot_icb_contacts_by_year <- function(icb_data) {
   create_main_projection_chart(icb_data[["data"]][[1]], icb_data[["icb22nm"]])
 }
 
-plot_percent_change_by_age <- function(icb_data) {
-  list(national = get_national_contacts(), icb = icb_data) |>
+plot_percent_change_by_age <- function(icb_data, horizon = "2042_43") {
+  g <- glue::glue
+  list(get_national_contacts(), icb_data[["data"]][[1]]) |>
+    rlang::set_names(c("England", icb_data[["icb22nm"]])) |>
     dplyr::bind_rows(.id = "type") |>
-    dplyr::filter(dplyr::if_any("fin_year", \(x) grepl("^20[24]2", x))) |>
+    dplyr::filter(.data$fin_year %in% c("2022_23", horizon)) |>
     add_age_groups() |>
     dplyr::summarise(
       value = sum(.data[["projected_contacts"]]),
@@ -60,7 +62,7 @@ plot_percent_change_by_age <- function(icb_data) {
       names_prefix = "yr_"
     ) |>
     dplyr::mutate(
-      pct_change = (.data[["yr_2042_43"]] - .data[["yr_2022_23"]]) /
+      pct_change = (.data[[g("yr_{horizon}")]] - .data[["yr_2022_23"]]) /
         .data[["yr_2022_23"]],
       .keep = "unused"
     ) |>
@@ -70,31 +72,23 @@ plot_percent_change_by_age <- function(icb_data) {
       position = "dodge",
       width = 0.75
     ) +
-    ggplot2::geom_hline(yintercept = 0, linewidth = 0.4) +
-    ggplot2::labs(
-      x = "Age group",
-      y = "% change"
-    ) +
+    ggplot2::geom_hline(yintercept = 0, linewidth = 0.4, colour = text_grey) +
+    ggplot2::labs(x = "Age group", y = "% change") +
     ggplot2::scale_y_continuous(
       labels = scales::label_percent(suffix = ""),
       limits = c(-0.25, NA)
     ) +
     StrategyUnitTheme::scale_fill_su(name = NULL) +
-    su_chart_theme() +
-    ggplot2::theme(
-      legend.position = "inside",
-      legend.position.inside = c(0.15, 0.72),
-      legend.text = ggplot2::element_text(
-        margin = ggplot2::margin(l = 6),
-        hjust = 0
-      )
-    )
+    su_chart_theme()
 }
 
-plot_contacts_per_population <- function(icb_data) {
-  list(national = get_national_contacts(), icb = icb_data) |>
+plot_contacts_per_population <- function(icb_data, horizon = "2042_43") {
+  g <- glue::glue
+  list(get_national_contacts(), icb_data[["data"]][[1]]) |>
+    rlang::set_names(c("England", icb_data[["icb22nm"]])) |>
     dplyr::bind_rows(.id = "type") |>
     dplyr::filter(dplyr::if_any("fin_year", \(x) x == "2022_23")) |>
+    dplyr::rename(fin_year_popn = "proj_popn_by_fy_age") |>
     add_age_groups() |>
     dplyr::summarise(
       dplyr::across(c("fin_year_popn", "projected_contacts"), sum),
@@ -110,19 +104,44 @@ plot_contacts_per_population <- function(icb_data) {
       position = "dodge",
       width = 0.75
     ) +
-    ggplot2::labs(
-      x = "Age group",
-      y = "Contacts / 1000 people"
+    ggplot2::labs(x = "Age group", y = "Contacts / 1000 population") +
+    ggplot2::scale_y_continuous(
+      labels = scales::label_number(scale = 1e3, suffix = "k")
     ) +
-    ggplot2::scale_y_continuous(labels = scales::label_number(scale = 1e3)) +
     StrategyUnitTheme::scale_fill_su(name = NULL) +
-    su_chart_theme() +
-    ggplot2::theme(
-      legend.position = "inside",
-      legend.position.inside = c(0.15, 0.72),
-      legend.text = ggplot2::element_text(
-        margin = ggplot2::margin(l = 6),
-        hjust = 0
-      )
-    )
+    su_chart_theme()
+}
+
+
+plot_percent_change_by_service <- function(icb_data, horizon = "2042_43") {
+  g <- glue::glue
+  list(get_national_contacts(), icb_data[["data"]][[1]]) |>
+    rlang::set_names(c("England", icb_data[["icb22nm"]])) |>
+    dplyr::bind_rows(.id = "type") |>
+    dplyr::filter(.data$fin_year %in% c("2022_23", horizon)) |>
+    dplyr::summarise(
+      value = sum(.data[["projected_contacts"]]),
+      .by = c("type", "fin_year", "team_type")
+    ) |>
+    tidyr::pivot_wider(
+      id_cols = c("type", "team_type"),
+      names_from = "fin_year",
+      names_prefix = "yr_"
+    ) |>
+    dplyr::mutate(
+      pct_change = (.data[[g("yr_{horizon}")]] - .data[["yr_2022_23"]]) /
+        .data[["yr_2022_23"]],
+      .keep = "unused"
+    ) |>
+    ggplot2::ggplot(ggplot2::aes(pct_change, team_type)) +
+    ggplot2::geom_col(
+      ggplot2::aes(fill = type),
+      position = "dodge",
+      width = 0.75
+    ) +
+    ggplot2::geom_vline(xintercept = 0, linewidth = 0.4, colour = text_grey) +
+    ggplot2::labs(x = "% change", y = NULL) +
+    ggplot2::scale_x_continuous(labels = scales::label_percent(suffix = "")) +
+    StrategyUnitTheme::scale_fill_su(name = NULL) +
+    su_chart_theme()
 }
