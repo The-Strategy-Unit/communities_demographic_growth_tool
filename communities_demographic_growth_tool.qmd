@@ -270,7 +270,6 @@ icb_data |>
 
 ```
 
-
 ## National contacts projection by financial year
 
 
@@ -378,7 +377,6 @@ list(nat_contacts_data, icb_contacts_data) |>
   scale_fill_su(name = NULL) +
   su_chart_theme()
 
-
 ```
 
 
@@ -416,6 +414,58 @@ list(nat_contacts_data, icb_contacts_data) |>
   ) +
   scale_fill_su(name = NULL) +
   su_chart_theme()
+
+```
+
+
+## % projected change in total contacts from baseline year to horizon year, by service
+
+
+```{r team-type-chart1}
+#| fig-height: 32
+
+list(nat_contacts_data, icb_contacts_data) |>
+  rlang::set_names(c("England", icb_name)) |>
+  dplyr::bind_rows(.id = "type") |>
+  dplyr::filter(dplyr::if_any("fin_year", \(x) grepl("^20[24]2", x))) |>
+  dplyr::summarise(
+    value = sum(.data[["projected_contacts"]]),
+    .by = c("type", "fin_year", "team_type")
+  ) |>
+  tidyr::pivot_wider(
+    id_cols = c("type", "team_type"),
+    names_from = "fin_year",
+    names_prefix = "yr_"
+  ) |>
+  dplyr::mutate(
+    pct_change = (.data[["yr_2042_43"]] - .data[["yr_2022_23"]]) /
+      .data[["yr_2022_23"]],
+    .keep = "unused"
+  ) |>
+  dplyr::arrange(dplyr::pick("pct_change")) |>
+  dplyr::mutate(across("team_type", forcats::fct_inorder)) |>
+  ggplot2::ggplot(ggplot2::aes(pct_change, team_type)) +
+  ggplot2::geom_col(
+    ggplot2::aes(fill = type),
+    position = "dodge",
+    width = 0.75
+  ) +
+  ggplot2::geom_vline(xintercept = 0, linewidth = 0.4, colour = text_grey) +
+  ggplot2::labs(
+    title = "Projected % change in total contacts, by service, 2022/23 - 2042/43",
+    subtitle = sub_wrap(
+      "This chart shows changes within a single selected ICB compared to",
+      "national (England) changes. Change means the difference between",
+      "2022/23 annual contacts and projected 2042/43 annual contacts,",
+      "as a percentage of 2022/23 contacts."
+    ),
+    x = "% change",
+    y = NULL
+  ) +
+  ggplot2::scale_x_continuous(labels = scales::label_percent(suffix = "")) +
+  scale_fill_su(name = NULL) +
+  su_chart_theme()
+
 ```
 
 
@@ -531,7 +581,7 @@ hex_data <- icb_hexes |>
   dplyr::left_join(projected_contacts_by_icb, "icb22cdh")
 
 design <- LETTERS[1:5] |>
-  purrr::map(\(x) stringr::str_c(rep(x, 21), collapse = "\n")) |>
+  purrr::map(\(x) stringr::str_c(rep(x, 32), collapse = "\n")) |>
   stringr::str_flatten("\n#\n")
 
 c("0-4", "5-17", "18-64", "65-84", "85+") |>
