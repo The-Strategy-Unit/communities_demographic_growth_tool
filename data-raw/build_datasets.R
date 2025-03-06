@@ -194,7 +194,6 @@ join_popn_proj_data <- function(dat, nat = FALSE, y = popn_fy_projected) {
 
 
 nat_projected_contacts_fy <- readr::read_rds("csds_contacts_icb_summary.rds") |>
-  # fmt: skip
   dplyr::mutate(
     nat_contacts_missing_icb = sum(dplyr::if_else(
       is.na(.data$icb22cdh), .data$contacts, 0L
