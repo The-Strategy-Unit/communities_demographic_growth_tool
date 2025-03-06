@@ -1,13 +1,7 @@
 app_server = function(input, output, session) {
   get_icb_data <- shiny::reactive({
-    get_contacts_data() |>
-      dplyr::filter(.data$icb22cdh == input$icb) |>
-      dplyr::pull("data") |>
-      dplyr::bind_rows() |>
-      dplyr::summarise(
-        dplyr::across(c("fin_year_popn", "projected_contacts"), sum),
-        .by = c("fin_year", "age_int")
-      )
+    get_all_icbs_data() |>
+      dplyr::filter(.data$icb22cdh == input$icb)
   })
 
   output$national_contacts_by_year <- shiny::renderPlot({
