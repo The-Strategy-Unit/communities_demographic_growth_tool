@@ -50,6 +50,7 @@ plot_percent_change_by_age <- function(icb_data, horizon = "2042_43") {
   list(get_national_contacts(), icb_data[["data"]][[1]]) |>
     rlang::set_names(c("England", icb_data[["icb22nm"]])) |>
     dplyr::bind_rows(.id = "type") |>
+    dplyr::mutate(across("type", forcats::fct_inorder)) |>
     dplyr::filter(.data$fin_year %in% c("2022_23", horizon)) |>
     add_age_groups() |>
     dplyr::summarise(
@@ -87,6 +88,7 @@ plot_contacts_per_population <- function(icb_data, horizon = "2042_43") {
   list(get_national_contacts(), icb_data[["data"]][[1]]) |>
     rlang::set_names(c("England", icb_data[["icb22nm"]])) |>
     dplyr::bind_rows(.id = "type") |>
+    dplyr::mutate(across("type", forcats::fct_inorder)) |>
     dplyr::filter(dplyr::if_any("fin_year", \(x) x == "2022_23")) |>
     dplyr::rename(fin_year_popn = "proj_popn_by_fy_age") |>
     add_age_groups() |>
@@ -118,6 +120,7 @@ plot_percent_change_by_service <- function(icb_data, horizon = "2042_43") {
   list(get_national_contacts(), icb_data[["data"]][[1]]) |>
     rlang::set_names(c("England", icb_data[["icb22nm"]])) |>
     dplyr::bind_rows(.id = "type") |>
+    dplyr::mutate(across("type", forcats::fct_inorder)) |>
     dplyr::filter(.data$fin_year %in% c("2022_23", horizon)) |>
     dplyr::summarise(
       value = sum(.data[["projected_contacts"]]),
