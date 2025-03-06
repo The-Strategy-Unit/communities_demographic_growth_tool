@@ -1,13 +1,13 @@
 get_all_icbs_data <- function() {
   icb_projected_contacts_fy |>
     dplyr::mutate(
-      across("icb22nm", \(x) sub("^(NHS )(.*)( Integ.*)$", "\\2 ICB", x))
+      dplyr::across("icb22nm", \(x) sub("^(NHS )(.*)( Integ.*)$", "\\2 ICB", x))
     )
 }
 
 icb_list <- function() {
   get_all_icbs_data() |>
-    dplyr::select(c(icb22nm, icb22cdh)) |>
+    dplyr::select(c("icb22nm", "icb22cdh")) |>
     tibble::deframe()
 }
 

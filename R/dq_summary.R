@@ -30,7 +30,7 @@ create_data_quality_table <- function(dat, icb = TRUE, label) {
     ) |>
     gt::fmt_number(columns = "n", decimals = 0) |>
     gt::opt_footnote_marks("standard") |>
-    gt::opt_table_font("Segoe UI", size = 18, color = text_grey) |>
+    gt::opt_table_font("Segoe UI", size = 18, color = "#3e3f3a") |>
     gt::tab_options(table.width = "92%")
 }
 

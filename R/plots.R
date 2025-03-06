@@ -4,16 +4,16 @@ create_main_projection_chart <- function(.data, label) {
   }
   .data |>
     dplyr::mutate(
-      across("fin_year", \(x) as.Date(sub("_[0-9]{2}$", "-01-01", x)))
+      dplyr::across("fin_year", \(x) as.Date(sub("_[0-9]{2}$", "-01-01", x)))
     ) |>
     add_broad_age_groups() |>
     dplyr::summarise(
       dplyr::across("projected_contacts", sum),
       .by = c("fin_year", "broad_age_cat")
     ) |>
-    ggplot2::ggplot(ggplot2::aes(fin_year, projected_contacts)) +
+    ggplot2::ggplot(ggplot2::aes(.data$fin_year, .data$projected_contacts)) +
     ggplot2::geom_line(
-      ggplot2::aes(colour = broad_age_cat, group = broad_age_cat),
+      ggplot2::aes(colour = .data$broad_age_cat, group = .data$broad_age_cat),
       linewidth = 1.8
     ) +
     ggplot2::labs(x = NULL, y = NULL) +
@@ -66,13 +66,13 @@ plot_percent_change_by_age <- function(icb_data, horizon = "2042_43") {
         .data[["yr_2022_23"]],
       .keep = "unused"
     ) |>
-    ggplot2::ggplot(ggplot2::aes(age_group_cat, pct_change)) +
+    ggplot2::ggplot(ggplot2::aes(.data$age_group_cat, .data$pct_change)) +
     ggplot2::geom_col(
-      ggplot2::aes(fill = type),
+      ggplot2::aes(fill = .data$type),
       position = "dodge",
       width = 0.75
     ) +
-    ggplot2::geom_hline(yintercept = 0, linewidth = 0.4, colour = text_grey) +
+    ggplot2::geom_hline(yintercept = 0, linewidth = 0.4, colour = "#3e3f3a") +
     ggplot2::labs(x = "Age group", y = "% change") +
     ggplot2::scale_y_continuous(
       labels = scales::label_percent(suffix = ""),
@@ -98,9 +98,9 @@ plot_contacts_per_population <- function(icb_data, horizon = "2042_43") {
       contacts_rate = .data[["projected_contacts"]] / .data[["fin_year_popn"]],
       .keep = "unused"
     ) |>
-    ggplot2::ggplot(ggplot2::aes(age_group_cat, contacts_rate)) +
+    ggplot2::ggplot(ggplot2::aes(.data$age_group_cat, .data$contacts_rate)) +
     ggplot2::geom_col(
-      ggplot2::aes(fill = type),
+      ggplot2::aes(fill = .data$type),
       position = "dodge",
       width = 0.75
     ) +
@@ -133,13 +133,13 @@ plot_percent_change_by_service <- function(icb_data, horizon = "2042_43") {
         .data[["yr_2022_23"]],
       .keep = "unused"
     ) |>
-    ggplot2::ggplot(ggplot2::aes(pct_change, team_type)) +
+    ggplot2::ggplot(ggplot2::aes(.data$pct_change, .data$team_type)) +
     ggplot2::geom_col(
-      ggplot2::aes(fill = type),
+      ggplot2::aes(fill = .data$type),
       position = "dodge",
       width = 0.75
     ) +
-    ggplot2::geom_vline(xintercept = 0, linewidth = 0.4, colour = text_grey) +
+    ggplot2::geom_vline(xintercept = 0, linewidth = 0.4, colour = "#3e3f3a") +
     ggplot2::labs(x = "% change", y = NULL) +
     ggplot2::scale_x_continuous(labels = scales::label_percent(suffix = "")) +
     StrategyUnitTheme::scale_fill_su(name = NULL) +
