@@ -11,7 +11,7 @@ create_data_quality_table <- function(dat, icb = TRUE, label) {
     "Remaining contacts included in projections"
   )
   if (icb) category_names <- purrr::discard_at(category_names, 2)
-  row_n <- if (icb) 6 else 7
+row_cancelled <- stringr::str_which(category_names, "appointment was cancelled")
   dat |>
     dplyr::select(!"data") |>
     dplyr::rename_with(\(x) category_names) |>
@@ -26,7 +26,7 @@ create_data_quality_table <- function(dat, icb = TRUE, label) {
     gt::tab_source_note("Source: CSDS 2022/23, NHS England") |>
     gt::tab_footnote(
       "This category includes appointments with unknown status",
-      gt::cells_body(1, row_n)
+      gt::cells_body(1, row_cancelled)
     ) |>
     gt::fmt_number(columns = "n", decimals = 0) |>
     gt::opt_footnote_marks("standard") |>
