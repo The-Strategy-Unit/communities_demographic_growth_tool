@@ -228,7 +228,5 @@ icb_projected_contacts_fy <- readr::read_rds("csds_contacts_icb_summary.rds") |>
 usethis::use_data(
   icb_projected_contacts_fy,
   nat_projected_contacts_fy,
-  internal = TRUE,
-  overwrite = TRUE,
   compress = "xz"
 )
