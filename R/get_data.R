@@ -12,4 +12,6 @@ icb_list <- function() {
 }
 
 get_national_data <- \() CSDSDemographicGrowthApp::nat_projected_contacts_fy
-get_national_contacts <- \() CSDSDemographicGrowthApp::nat_projected_contacts_fy[["data"]][[1]]
+get_national_contacts <- function() {
+  CSDSDemographicGrowthApp::nat_projected_contacts_fy[["data"]][[1]]
+}
