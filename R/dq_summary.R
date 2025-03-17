@@ -11,7 +11,7 @@ create_data_quality_table <- function(dat, icb = TRUE, label) {
     "Remaining contacts included in projections"
   )
   if (icb) category_names <- purrr::discard_at(category_names, 2)
-row_cancelled <- stringr::str_which(category_names, "appointment was cancelled")
+  row_cancelled <- stringr::str_which(category_names, "appointment was cancelled")
   dat |>
     dplyr::select(!"data") |>
     dplyr::rename_with(\(x) category_names) |>

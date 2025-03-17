@@ -1,4 +1,4 @@
-app_ui = function() {
+app_ui <- function() {
   bslib::page_sidebar(
     title = "Communities demographic growth tool",
     lang = "en",
@@ -20,13 +20,11 @@ app_ui = function() {
         ),
         shiny::plotOutput("national_contacts_by_year"),
       ),
-
       bslib::card(
         full_screen = TRUE,
         bslib::card_header("ICB-level contacts projection by financial year"),
         shiny::plotOutput("icb_contacts_by_year")
       ),
-
       bslib::card(
         full_screen = TRUE,
         bslib::card_header(
@@ -34,7 +32,6 @@ app_ui = function() {
         ),
         shiny::plotOutput("percent_change_by_age")
       ),
-
       bslib::card(
         full_screen = TRUE,
         bslib::card_header(

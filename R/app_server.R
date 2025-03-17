@@ -1,4 +1,4 @@
-app_server = function(input, output, session) {
+app_server <- function(input, output, session) {
   get_icb_data <- shiny::reactive({
     get_all_icbs_data() |>
       dplyr::filter(.data$icb22cdh == input$icb)

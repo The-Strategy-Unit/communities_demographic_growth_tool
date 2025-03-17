@@ -154,12 +154,10 @@ su_chart_theme <- function(font_family = "Segoe UI") {
 sub_wrap <- function(..., ww = 120, .envir = parent.frame()) {
   stringr::str_wrap(glue::glue(..., .sep = " ", .envir = .envir), width = ww)
 }
-
 ```
 
 
 ```{r data-summary-functions}
-
 add_age_groups <- function(.data) {
   .data |>
     dplyr::arrange(dplyr::pick("age_int")) |>
@@ -194,9 +192,6 @@ add_broad_age_groups <- function(.data) {
       .keep = "unused"
     )
 }
-
-
-
 ```
 
 ### Data quality summary (national)
@@ -267,7 +262,6 @@ national_data |>
 icb_data |>
   dplyr::select(!tidyselect::starts_with("icb22")) |>
   create_data_quality_table(label = icb_name)
-
 ```
 
 
@@ -317,7 +311,6 @@ create_main_projection_chart <- function(.data, label) {
 }
 
 create_main_projection_chart(nat_contacts_data, "national")
-
 ```
 
 
@@ -326,7 +319,6 @@ create_main_projection_chart(nat_contacts_data, "national")
 
 ```{r charts2}
 create_main_projection_chart(icb_contacts_data, icb_name)
-
 ```
 
 
@@ -377,7 +369,6 @@ list(nat_contacts_data, icb_contacts_data) |>
   ) +
   scale_fill_su(name = NULL) +
   su_chart_theme()
-
 ```
 
 
@@ -415,7 +406,6 @@ list(nat_contacts_data, icb_contacts_data) |>
   ) +
   scale_fill_su(name = NULL) +
   su_chart_theme()
-
 ```
 
 
@@ -466,7 +456,6 @@ list(nat_contacts_data, icb_contacts_data) |>
   ggplot2::scale_x_continuous(labels = scales::label_percent(suffix = "")) +
   scale_fill_su(name = NULL) +
   su_chart_theme()
-
 ```
 
 
@@ -590,5 +579,4 @@ c("0-4", "5-17", "18-64", "65-84", "85+") |>
   purrr::map(\(x) plot_icb_hexmap(hex_data, pct_change, x)) |>
   rlang::set_names(LETTERS[1:5]) |>
   patchwork::wrap_plots(ncol = 1, design = design)
-
 ```
