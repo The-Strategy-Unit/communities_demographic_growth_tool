@@ -17,13 +17,6 @@ icb_ui <- function(id) {
       height = 300,
       bslib::card(
         full_screen = TRUE,
-        bslib::card_header(
-          "Projected contacts (national) by broad age group, 2022/23 - 2042/43"
-        ),
-        shiny::plotOutput(ns("national_contacts_by_year")),
-      ),
-      bslib::card(
-        full_screen = TRUE,
         bslib::card_header("ICB-level contacts projection by financial year"),
         shiny::plotOutput(ns("icb_contacts_by_year"))
       ),
@@ -53,10 +46,6 @@ icb_server <- function(id) {
     get_icb_data <- shiny::reactive({
       get_all_icbs_data() |>
         dplyr::filter(.data$icb22cdh == input$icb)
-    })
-
-    output$national_contacts_by_year <- shiny::renderPlot({
-      plot_national_contacts_by_year()
     })
 
     output$icb_contacts_by_year <- shiny::renderPlot({
