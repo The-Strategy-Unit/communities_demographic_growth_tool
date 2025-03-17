@@ -1,7 +1,7 @@
 # ICB module
 
 # UI
-icbUI <- function(id) {
+icb_ui <- function(id) {
   ns <- shiny::NS(id)
 
   bslib::page_sidebar(
@@ -48,9 +48,8 @@ icbUI <- function(id) {
 
 # Server
 
-icbServer <- function(id) {
+icb_server <- function(id) {
   shiny::moduleServer(id, function(input, output, session) {
-
     get_icb_data <- shiny::reactive({
       get_all_icbs_data() |>
         dplyr::filter(.data$icb22cdh == input$icb)

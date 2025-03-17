@@ -1,0 +1,8 @@
+linters: linters_with_defaults(
+    object_length_linter = NULL,
+    indentation_linter = NULL # Using air
+  )
+exclusions: list(
+    "R/data.R",
+    "inst/"
+  )
