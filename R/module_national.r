@@ -17,7 +17,6 @@ national_ui <- function(id) {
       )
     )
   )
-
 }
 
 
@@ -25,10 +24,8 @@ national_ui <- function(id) {
 
 national_server <- function(id) {
   shiny::moduleServer(id, function(input, output, session) {
-
     output$national_contacts_by_year <- shiny::renderPlot({
       plot_national_contacts_by_year()
     })
-
   })
 }
