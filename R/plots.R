@@ -62,7 +62,8 @@ plot_percent_change_by_age <- function(icb_data, horizon = "2042_43") {
       names_prefix = "yr_"
     ) |>
     dplyr::mutate(
-      pct_change = (.data[[glue::glue("yr_{horizon}")]] - .data[["yr_2022_23"]]) /
+      pct_change = (.data[[glue::glue("yr_{horizon}")]] -
+        .data[["yr_2022_23"]]) /
         .data[["yr_2022_23"]],
       .keep = "unused"
     ) |>
@@ -129,7 +130,8 @@ plot_percent_change_by_service <- function(icb_data, horizon = "2042_43") {
       names_prefix = "yr_"
     ) |>
     dplyr::mutate(
-      pct_change = (.data[[glue::glue("yr_{horizon}")]] - .data[["yr_2022_23"]]) /
+      pct_change = (.data[[glue::glue("yr_{horizon}")]] -
+        .data[["yr_2022_23"]]) /
         .data[["yr_2022_23"]],
       .keep = "unused"
     ) |>
