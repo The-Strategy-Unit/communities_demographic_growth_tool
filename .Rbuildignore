@@ -5,3 +5,4 @@
 ^CODEOWNERS$
 ^data-raw$
 ^\.github$
+^_brand.yml$
