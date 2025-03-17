@@ -1,6 +1,6 @@
 app_server <- function(input, output, session) {
 
-  icbServer("icb")
-  nationalServer("national")
+  icb_server("icb")
+  national_server("national")
 
 }
