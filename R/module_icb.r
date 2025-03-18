@@ -25,40 +25,39 @@ icb_ui <- function(id) {
       )
     ),
     bslib::layout_column_wrap(
-      width = 0.5,
+      width = NULL,
+      style = bslib::css(grid_template_columns = "1fr 3fr"),
       height = 300,
       bslib::card(
-        full_screen = TRUE,
-        bslib::card_header("ICB-level contacts projection by financial year"),
-        shiny::plotOutput(ns("icb_contacts_by_year"))
+        shiny::htmlOutput(ns("icb_sentence"))
       ),
-      bslib::card(
+      bslib::navset_card_pill(
+        placement = "above",
         full_screen = TRUE,
-        bslib::card_header(
-          "Projected % change in total contacts over period, by age group"
+        bslib::nav_panel(
+          title = "Totals by age",
+          shiny::plotOutput(ns("icb_contacts_by_year"))
         ),
-        shiny::plotOutput(ns("percent_change_by_age"))
-      ),
-      bslib::card(
-        full_screen = TRUE,
-        bslib::card_header(
-          "Contacts per 1000 population, 2022/23, by age group"
+        bslib::nav_panel(
+          title = "% change by age",
+          shiny::plotOutput(ns("percent_change_by_age"))
         ),
-        shiny::plotOutput(ns("contacts_per_population"))
-      ),
-      bslib::card(
-        full_screen = TRUE,
-        bslib::card_header(
-          "Projected % change in total contacts over period, by service"
+        bslib::nav_panel(
+          title = "% change by service",
+          shiny::plotOutput(ns("percent_change_by_service"))
         ),
-        shiny::plotOutput(ns("percent_change_by_service"))
+        bslib::nav_panel(
+          title = "Utilisation",
+          shiny::plotOutput(ns("contacts_per_population"))
+        ),
+        bslib::nav_panel(
+          title = "Data"
+        )
       )
     )
   )
 }
 
-
-#
 
 # Server
 
@@ -67,6 +66,10 @@ icb_server <- function(id) {
     get_icb_data <- shiny::reactive({
       get_all_icbs_data() |>
         dplyr::filter(.data$icb22cdh == input$icb)
+    })
+
+    output$icb_sentence <- shiny::renderUI({
+      get_icb_sentence(get_icb_data(), horizon = input$horizon)
     })
 
     output$icb_contacts_by_year <- shiny::renderPlot({
