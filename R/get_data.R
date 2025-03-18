@@ -11,6 +11,21 @@ icb_list <- function() {
     tibble::deframe()
 }
 
+format_fin_year <- function(fin_year) {
+  fin_year |>
+    stringr::str_sub(3, -1) |>
+    stringr::str_replace("_", "/")
+}
+
+year_list <- function() {
+  years <-
+    get_national_contacts() |>
+    dplyr::pull("fin_year") |>
+    unique()
+  names(years) <- format_fin_year(years)
+  years
+}
+
 get_national_data <- \() CSDSDemographicGrowthApp::nat_projected_contacts_fy
 get_national_contacts <- function() {
   CSDSDemographicGrowthApp::nat_projected_contacts_fy[["data"]][[1]]
