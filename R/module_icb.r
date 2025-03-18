@@ -8,18 +8,18 @@ icb_ui <- function(id) {
     sidebar = bslib::sidebar(
       shiny::selectInput(
         ns("icb"),
-        "Select ICB",
+        "ICB",
         choices = icb_list()
       ),
       shiny::selectInput(
         ns("horizon"),
-        label = "Select horizon year",
+        label = "Horizon year",
         choices = year_list()[-(1:3)], # Only shortest horizon of 3 years
         selected = "2042_43" # TODO Don't hardcode
       ),
       shiny::selectInput(
         ns("measure"),
-        label = "Select a measure",
+        label = "Measure",
         choices = c("Contacts", "Patients"),
         selected = "Contacts"
       )
