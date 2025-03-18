@@ -16,3 +16,20 @@ popn_fy_projected <- readr::read_rds("popn_proj_tidy.rds") |>
     .keep = "unused"
   ) |>
   dplyr::filter(!dplyr::if_any("fin_year_popn", is.na))
+
+
+icb_popn_fy_projected <- readr::read_rds("icb_lad_split.rds") |>
+  dplyr::left_join(
+    popn_fy_projected,
+    "lad18cd",
+    relationship = "many-to-many"
+  ) |>
+  dplyr::mutate(
+    across("fin_year_popn", \(x) x * .data[["lad_icb_pct"]]),
+    .keep = "unused"
+  ) |>
+  dplyr::summarise(
+    across("fin_year_popn", sum),
+    .by = c("icb22cdh", "fin_year", "age_int")
+  ) |>
+  readr::write_rds("icb_popn_fy_projected.rds")
