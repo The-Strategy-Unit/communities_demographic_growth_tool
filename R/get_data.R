@@ -11,18 +11,12 @@ icb_list <- function() {
     tibble::deframe()
 }
 
-format_fin_year <- function(fin_year) {
-  fin_year |>
-    stringr::str_sub(3, -1) |>
-    stringr::str_replace("_", "/")
-}
-
 year_list <- function() {
   years <-
     get_national_contacts() |>
     dplyr::pull("fin_year") |>
     unique()
-  names(years) <- format_fin_year(years)
+  names(years) <- stringr::str_replace(years, "_", "/")
   years
 }
 
