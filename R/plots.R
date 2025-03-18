@@ -95,7 +95,7 @@ plot_percent_change_by_age <- function(icb_data, horizon = "2042_43") {
     su_chart_theme()
 }
 
-plot_contacts_per_population <- function(icb_data, horizon = "2042_43") {
+plot_contacts_per_population <- function(icb_data) {
   list(get_national_contacts(), icb_data[["data"]][[1]]) |>
     rlang::set_names(c("England", icb_data[["icb22nm"]])) |>
     dplyr::bind_rows(.id = "type") |>
