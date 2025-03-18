@@ -1,6 +1,6 @@
 get_total_fy_contacts <- function(dat, fin_year) {
   dat[["data"]][[1]] |>
-    dplyr::filter(dplyr::if_any("fin_year", \(x) x == .env$fin_year)) |>
+    dplyr::filter(dplyr::if_any("fin_year", \(x) x == .env$fin_year)) |> # nolint object_usage_linter
     dplyr::pull("projected_contacts") |>
     sum()
 }
@@ -49,8 +49,10 @@ get_icb_sentence <- function(dat, horizon) {
     )
 
   glue::glue(
-    "The total number of contacts for {dat$icb22nm} is {total_baseline}. <br><br>
-    By the year {stringr::str_replace(horizon, '_', '/')} this is predicted to rise to {total_horizon},
+    "The total number of contacts for {dat$icb22nm} is
+     {total_baseline}. <br><br>
+    By the year {stringr::str_replace(horizon, '_', '/')}
+     this is predicted to rise to {total_horizon},
      an increase of {percent_change}%."
   ) |>
     htmltools::HTML()
