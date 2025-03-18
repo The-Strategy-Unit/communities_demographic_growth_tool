@@ -10,6 +10,12 @@ icb_ui <- function(id) {
         ns("icb"),
         "Select ICB",
         choices = icb_list()
+      ),
+      shiny::selectInput(
+        ns("hozion"),
+        label = "Select horizon year",
+        choices = year_list()[-(1:3)], # Only shortest horizon of 3 years
+        selected = "2042_43" # TODO Don't hardcode
       )
     ),
     bslib::layout_column_wrap(
