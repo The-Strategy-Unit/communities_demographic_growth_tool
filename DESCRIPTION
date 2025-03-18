@@ -3,8 +3,8 @@ Title: Exploring the impact of demographic growth on community services demand
 Version: 0.0.0.9000
 Authors@R:
     c(
-    person("Francis", "Barton", , "francis.barton@nhs.net", role = c("aut", "cre")),
-    person("Rhian", "Davies", , "rhian.davies25@nhs.net", role = "aut"),
+    person("Francis", "Barton", email = "francis.barton@nhs.net", role = c("aut", "cre")),
+    person("Rhian", "Davies", email = "rhian.davies25@nhs.net", role = "aut"),
     person("The Strategy Unit", role = "fnd")
     )
 Description: A shiny application to show the impact of demographic growth on community services using the CSDS dataset.
@@ -15,19 +15,22 @@ RoxygenNote: 7.3.2
 Depends:
     R (>= 4.1)
 Imports:
+    arrow,
     bslib,
-    dplyr,
+    dplyr (>= 1.1),
     forcats,
     ggplot2,
     glue,
     gt,
+    here,
     purrr,
     rlang,
     scales,
     shiny,
     StrategyUnitTheme,
     tibble,
-    tidyr,
+    tidyr (>= 1.3),
     tidyselect
 Remotes:
-    The-Strategy-Unit/StrategyUnitTheme
+    The-Strategy-Unit/StrategyUnitTheme,
+    tidyverse/tidyr
