@@ -1,6 +1,6 @@
 get_total_fy_contacts <- function(dat, fin_year) {
   dat[["data"]][[1]] |>
-    dplyr::filter(dplyr::if_any("fin_year", \(x) x == fin_year)) |>
+    dplyr::filter(dplyr::if_any("fin_year", \(x) x == .env$fin_year)) |>
     dplyr::pull("projected_contacts") |>
     sum()
 }
