@@ -16,6 +16,12 @@ icb_ui <- function(id) {
         label = "Select horizon year",
         choices = year_list()[-(1:3)], # Only shortest horizon of 3 years
         selected = "2042_43" # TODO Don't hardcode
+      ),
+      shiny::selectInput(
+        ns("measure"),
+        label = "Select a measure",
+        choices = c("Contacts", "Patients"),
+        selected = "Contacts"
       )
     ),
     bslib::layout_column_wrap(
