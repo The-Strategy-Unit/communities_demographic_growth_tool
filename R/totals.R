@@ -29,3 +29,29 @@ get_national_pct_change_total_fy_contacts <- function(
   h <- get_national_total_fy_contacts(horizon_year)
   round((h - b) * 100 / b, 1)
 }
+
+get_icb_sentence <- function(dat, horizon) {
+  total_baseline <-
+    get_icb_total_fy_contacts(dat, "2022_23") |>
+    round(-3) |>
+    format(big.mark = ",")
+
+  total_horizon <-
+    get_icb_total_fy_contacts(dat, horizon) |>
+    round(-3) |>
+    format(big.mark = ",")
+
+  percent_change <-
+    get_icb_pct_change_total_fy_contacts(
+      dat,
+      baseline_year = "2022_23",
+      horizon_year = horizon
+    )
+
+  glue::glue(
+    "The total number of contacts for {dat$icb22nm} is {total_baseline}. <br><br>
+    By the year {stringr::str_replace(horizon, '_', '/')} this is predicted to rise to {total_horizon},
+     an increase of {percent_change}%."
+  ) |>
+    htmltools::HTML()
+}
