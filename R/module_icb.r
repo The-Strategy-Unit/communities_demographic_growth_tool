@@ -39,11 +39,20 @@ icb_ui <- function(id) {
           "Contacts per 1000 population, 2022/23, by age group"
         ),
         shiny::plotOutput(ns("contacts_per_population"))
+      ),
+      bslib::card(
+        full_screen = TRUE,
+        bslib::card_header(
+          "Projected % change in total contacts over period, by service"
+        ),
+        shiny::plotOutput(ns("percent_change_by_service"))
       )
     )
   )
 }
 
+
+#
 
 # Server
 
@@ -64,6 +73,10 @@ icb_server <- function(id) {
 
     output$contacts_per_population <- shiny::renderPlot({
       plot_contacts_per_population(get_icb_data())
+    })
+
+    output$percent_change_by_service <- shiny::renderPlot({
+      plot_percent_change_by_service(get_icb_data(), horizon = input$horizon)
     })
   })
 }
