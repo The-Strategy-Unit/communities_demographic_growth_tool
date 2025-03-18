@@ -34,3 +34,4 @@ Imports:
 Remotes:
     The-Strategy-Unit/StrategyUnitTheme,
     tidyverse/tidyr
+LazyData: true
