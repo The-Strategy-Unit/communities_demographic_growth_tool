@@ -8,38 +8,51 @@ icb_ui <- function(id) {
     sidebar = bslib::sidebar(
       shiny::selectInput(
         ns("icb"),
-        "Select ICB",
+        "ICB",
         choices = icb_list()
+      ),
+      shiny::selectInput(
+        ns("horizon"),
+        label = "Horizon year",
+        choices = year_list()[-(1:3)], # Only shortest horizon of 3 years
+        selected = "2042_43" # TODO Don't hardcode
+      ),
+      shiny::selectInput(
+        ns("measure"),
+        label = "Measure",
+        choices = c("Contacts", "Patients"),
+        selected = "Contacts"
       )
     ),
     bslib::layout_column_wrap(
-      width = 0.5,
+      width = NULL,
+      style = bslib::css(grid_template_columns = "1fr 3fr"),
       height = 300,
       bslib::card(
-        full_screen = TRUE,
-        bslib::card_header(
-          "Projected contacts (national) by broad age group, 2022/23 - 2042/43"
-        ),
-        shiny::plotOutput(ns("national_contacts_by_year")),
+        shiny::htmlOutput(ns("icb_sentence"))
       ),
-      bslib::card(
+      bslib::navset_card_pill(
+        placement = "above",
         full_screen = TRUE,
-        bslib::card_header("ICB-level contacts projection by financial year"),
-        shiny::plotOutput(ns("icb_contacts_by_year"))
-      ),
-      bslib::card(
-        full_screen = TRUE,
-        bslib::card_header(
-          "Projected % change in total contacts over period, by age group"
+        bslib::nav_panel(
+          title = "Totals by age",
+          shiny::plotOutput(ns("icb_contacts_by_year"))
         ),
-        shiny::plotOutput(ns("percent_change_by_age"))
-      ),
-      bslib::card(
-        full_screen = TRUE,
-        bslib::card_header(
-          "Contacts per 1000 population, 2022/23, by age group"
+        bslib::nav_panel(
+          title = "% change by age",
+          shiny::plotOutput(ns("percent_change_by_age"))
         ),
-        shiny::plotOutput(ns("contacts_per_population"))
+        bslib::nav_panel(
+          title = "% change by service",
+          shiny::plotOutput(ns("percent_change_by_service"))
+        ),
+        bslib::nav_panel(
+          title = "Utilisation",
+          shiny::plotOutput(ns("contacts_per_population"))
+        ),
+        bslib::nav_panel(
+          title = "Data"
+        )
       )
     )
   )
@@ -55,20 +68,24 @@ icb_server <- function(id) {
         dplyr::filter(.data$icb22cdh == input$icb)
     })
 
-    output$national_contacts_by_year <- shiny::renderPlot({
-      plot_national_contacts_by_year()
+    output$icb_sentence <- shiny::renderUI({
+      get_icb_sentence(get_icb_data(), horizon = input$horizon)
     })
 
     output$icb_contacts_by_year <- shiny::renderPlot({
-      plot_icb_contacts_by_year(get_icb_data())
+      plot_icb_contacts_by_year(get_icb_data(), horizon = input$horizon)
     })
 
     output$percent_change_by_age <- shiny::renderPlot({
-      plot_percent_change_by_age(get_icb_data())
+      plot_percent_change_by_age(get_icb_data(), horizon = input$horizon)
     })
 
     output$contacts_per_population <- shiny::renderPlot({
       plot_contacts_per_population(get_icb_data())
+    })
+
+    output$percent_change_by_service <- shiny::renderPlot({
+      plot_percent_change_by_service(get_icb_data(), horizon = input$horizon)
     })
   })
 }

@@ -1,8 +1,9 @@
-create_main_projection_chart <- function(.data, label) {
+create_main_projection_chart <- function(.data, horizon, label) {
   conv_lab <- \(x) {
     paste0(format(x, "%Y"), "/", (as.integer(format(x, "%Y")) + 1) %% 100)
   }
-  .data |>
+  full_data <-
+    .data |>
     dplyr::mutate(
       dplyr::across("fin_year", \(x) as.Date(sub("_[0-9]{2}$", "-01-01", x)))
     ) |>
@@ -10,11 +11,30 @@ create_main_projection_chart <- function(.data, label) {
     dplyr::summarise(
       dplyr::across("projected_contacts", sum),
       .by = c("fin_year", "broad_age_cat")
-    ) |>
-    ggplot2::ggplot(ggplot2::aes(.data$fin_year, .data$projected_contacts)) +
+    )
+
+  filtered_data <-
+    full_data |>
+    dplyr::filter(
+      .data$fin_year <= as.Date(sub("_[0-9]{2}$", "-01-01", horizon))
+    )
+
+  full_data |>
+    ggplot2::ggplot(ggplot2::aes(
+      x = .data$fin_year,
+      y = .data$projected_contacts,
+      group = .data$broad_age_cat
+    )) +
+    ggplot2::geom_line(linewidth = 1, colour = "grey") +
     ggplot2::geom_line(
-      ggplot2::aes(colour = .data$broad_age_cat, group = .data$broad_age_cat),
-      linewidth = 1.8
+      data = filtered_data,
+      linewidth = 1,
+      ggplot2::aes(colour = .data$broad_age_cat)
+    ) +
+    ggplot2::geom_point(
+      data = filtered_data,
+      ggplot2::aes(colour = .data$broad_age_cat),
+      size = 2
     ) +
     ggplot2::labs(x = NULL, y = NULL) +
     ggplot2::scale_y_continuous(
@@ -38,11 +58,19 @@ create_main_projection_chart <- function(.data, label) {
 }
 
 plot_national_contacts_by_year <- function() {
-  create_main_projection_chart(get_national_contacts(), "national")
+  create_main_projection_chart(
+    get_national_contacts(),
+    horizon = "2042_43",
+    "national"
+  )
 }
 
-plot_icb_contacts_by_year <- function(icb_data) {
-  create_main_projection_chart(icb_data[["data"]][[1]], icb_data[["icb22nm"]])
+plot_icb_contacts_by_year <- function(icb_data, horizon) {
+  create_main_projection_chart(
+    icb_data[["data"]][[1]],
+    horizon = horizon,
+    icb_data[["icb22nm"]]
+  )
 }
 
 plot_percent_change_by_age <- function(icb_data, horizon = "2042_43") {
@@ -83,7 +111,7 @@ plot_percent_change_by_age <- function(icb_data, horizon = "2042_43") {
     su_chart_theme()
 }
 
-plot_contacts_per_population <- function(icb_data, horizon = "2042_43") {
+plot_contacts_per_population <- function(icb_data) {
   list(get_national_contacts(), icb_data[["data"]][[1]]) |>
     rlang::set_names(c("England", icb_data[["icb22nm"]])) |>
     dplyr::bind_rows(.id = "type") |>
