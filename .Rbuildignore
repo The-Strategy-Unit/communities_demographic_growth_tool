@@ -1,3 +1,4 @@
+^air.toml$
 ^CSDSDemographicGrowthApp\.Rproj$
 ^\.Rproj\.user$
 ^app.R$
@@ -5,4 +6,5 @@
 ^CODEOWNERS$
 ^data-raw$
 ^\.github$
+^.lintr$
 ^_brand.yml$

@@ -16,6 +16,7 @@ LazyData: true
 Depends:
     R (>= 4.1)
 Imports:
+    bsicons,
     bslib,
     dplyr,
     forcats,
@@ -27,6 +28,7 @@ Imports:
     scales,
     shiny,
     StrategyUnitTheme,
+    stringr,
     tibble,
     tidyr,
     tidyselect
