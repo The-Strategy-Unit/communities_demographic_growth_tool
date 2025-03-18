@@ -2,8 +2,8 @@ create_main_projection_chart <- function(.data, horizon, label) {
   conv_lab <- \(x) {
     paste0(format(x, "%Y"), "/", (as.integer(format(x, "%Y")) + 1) %% 100)
   }
-  .data |>
-    dplyr::filter(.data$fin_year <= horizon) |>
+  full_data <-
+    .data |>
     dplyr::mutate(
       dplyr::across("fin_year", \(x) as.Date(sub("_[0-9]{2}$", "-01-01", x)))
     ) |>
@@ -11,15 +11,31 @@ create_main_projection_chart <- function(.data, horizon, label) {
     dplyr::summarise(
       dplyr::across("projected_contacts", sum),
       .by = c("fin_year", "broad_age_cat")
-    ) |>
+    )
+
+  filtered_data <-
+    full_data |>
+    dplyr::filter(
+      .data$fin_year <= as.Date(sub("_[0-9]{2}$", "-01-01", horizon))
+    )
+
+  full_data |>
     ggplot2::ggplot(ggplot2::aes(
       x = .data$fin_year,
       y = .data$projected_contacts,
-      colour = .data$broad_age_cat,
       group = .data$broad_age_cat
     )) +
-    ggplot2::geom_line(linewidth = 1) +
-    ggplot2::geom_point(size = 2) +
+    ggplot2::geom_line(linewidth = 1, colour = "grey") +
+    ggplot2::geom_line(
+      data = filtered_data,
+      linewidth = 1,
+      ggplot2::aes(colour = .data$broad_age_cat)
+    ) +
+    ggplot2::geom_point(
+      data = filtered_data,
+      ggplot2::aes(colour = .data$broad_age_cat),
+      size = 2
+    ) +
     ggplot2::labs(x = NULL, y = NULL) +
     ggplot2::scale_y_continuous(
       labels = scales::label_number(scale = 1e-6, suffix = "mn")
