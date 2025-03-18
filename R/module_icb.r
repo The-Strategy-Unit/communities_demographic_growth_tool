@@ -12,7 +12,7 @@ icb_ui <- function(id) {
         choices = icb_list()
       ),
       shiny::selectInput(
-        ns("hozion"),
+        ns("horizon"),
         label = "Select horizon year",
         choices = year_list()[-(1:3)], # Only shortest horizon of 3 years
         selected = "2042_43" # TODO Don't hardcode
@@ -59,7 +59,7 @@ icb_server <- function(id) {
     })
 
     output$percent_change_by_age <- shiny::renderPlot({
-      plot_percent_change_by_age(get_icb_data())
+      plot_percent_change_by_age(get_icb_data(), horizon = input$horizon)
     })
 
     output$contacts_per_population <- shiny::renderPlot({
