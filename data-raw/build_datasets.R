@@ -9,7 +9,6 @@ read_in_reference_data <- function(table_name) {
     dplyr::tbl(dbplyr::in_catalog("strategyunit", "default", table_name))
 }
 
-
 # Read in data tables -----------------------------------------------------
 
 # CSDS data as prepared by JG
@@ -151,7 +150,7 @@ join_popn_proj_data <- function(dat, nat = FALSE, y = popn_fy_projected) {
         dplyr::if_any("consistent")
     ) |>
     dplyr::summarise(
-      across("contacts", sum),
+      dplyr::across("contacts", sum),
       .by = c(tidyselect::all_of(c(join_cols, ncmi)), "team_type")
     )
   icb_contacts_filt <- sum_con(dat_filtered)
@@ -165,7 +164,7 @@ join_popn_proj_data <- function(dat, nat = FALSE, y = popn_fy_projected) {
 
   fy_age_summary <- projected_contacts_by_fy |>
     dplyr::summarise(
-      across(c("fin_year_popn", "projected_contacts"), sum),
+      dplyr::across(c("fin_year_popn", "projected_contacts"), sum),
       .by = c(tidyselect::all_of(ncmi), "fin_year", "age_int")
     ) |>
     dplyr::rename(
@@ -175,7 +174,7 @@ join_popn_proj_data <- function(dat, nat = FALSE, y = popn_fy_projected) {
 
   projected_contacts_by_fy |>
     dplyr::summarise(
-      across("projected_contacts", sum),
+      dplyr::across("projected_contacts", sum),
       .by = c("fin_year", "age_int", "team_type")
     ) |>
     dplyr::left_join(fy_age_summary, c("fin_year", "age_int")) |>
@@ -195,10 +194,11 @@ join_popn_proj_data <- function(dat, nat = FALSE, y = popn_fy_projected) {
 
 
 nat_projected_contacts_fy <- readr::read_rds("csds_contacts_icb_summary.rds") |>
-  # fmt: skip
   dplyr::mutate(
     nat_contacts_missing_icb = sum(dplyr::if_else(
-      is.na(.data$icb22cdh), .data$contacts, 0L
+      is.na(.data$icb22cdh),
+      .data$contacts,
+      0L
     ))
   ) |>
   join_popn_proj_data(nat = TRUE) |>
@@ -227,9 +227,7 @@ icb_projected_contacts_fy <- readr::read_rds("csds_contacts_icb_summary.rds") |>
   tidyr::hoist("data", !!!hoist_cols, .transform = unique)
 
 usethis::use_data(
-  nat_projected_contacts_fy,
   icb_projected_contacts_fy,
-  internal = TRUE,
-  compress = "xz",
-  overwrite = TRUE
+  nat_projected_contacts_fy,
+  compress = "xz"
 )

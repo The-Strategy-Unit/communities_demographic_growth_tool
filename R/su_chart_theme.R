@@ -1,12 +1,9 @@
 su_chart_theme <- function(font_family = "Segoe UI") {
   text_grey <- "#3e3f3a"
-  #light_bkg <- "#faf0e6" # aka "linen"
-  # su_slate <- su_theme_cols("light_slate")
+  light_bkg <- "grey95"
   dark_slate <- StrategyUnitTheme::su_theme_cols("dark_slate")
-  # l_orange <- su_theme_cols("light_orange")
   loran_tr <- "#fcdf8377" # su_theme_cols("light_orange") with transparency
   slate_tr <- "#b2b7b977" # su_theme_cols("light_slate") with transparency
-  # coral_tr <- "#ff7f5077" # R coral with transparency
   ggplot2::theme(
     text = ggplot2::element_text(
       family = font_family,
@@ -28,22 +25,21 @@ su_chart_theme <- function(font_family = "Segoe UI") {
     ),
     plot.title.position = "plot",
     plot.caption.position = "plot",
-    #plot.background = ggplot2::element_rect(fill = light_bkg, colour = NA),
+    plot.background = ggplot2::element_rect(fill = light_bkg, colour = NA),
     plot.margin = ggplot2::margin(6, 24, 6, 6),
-    #panel.background = ggplot2::element_rect(fill = light_bkg),
+    panel.background = ggplot2::element_rect(fill = light_bkg),
+    legend.position = "bottom",
+    legend.title.position = "top",
     legend.title = ggplot2::element_text(
       hjust = 0,
       margin = ggplot2::margin(b = 8)
     ),
-    #legend.background = ggplot2::element_rect(fill = light_bkg),
-    # legend.margin = margin(r = 30),
-    #legend.key = ggplot2::element_rect(fill = light_bkg),
+    legend.text.position = "bottom",
+    legend.background = ggplot2::element_rect(fill = light_bkg),
+    legend.key = ggplot2::element_rect(fill = light_bkg),
     legend.key.spacing.y = grid::unit(3, "mm"),
     legend.key.width = grid::unit(12, "mm"),
-    legend.text = ggplot2::element_text(
-      margin = ggplot2::margin(l = 16),
-      hjust = 1
-    ),
+    legend.direction = "horizontal",
     panel.grid.major = ggplot2::element_line(
       colour = slate_tr,
       linewidth = 0.2,
@@ -54,30 +50,23 @@ su_chart_theme <- function(font_family = "Segoe UI") {
       linewidth = 0.1,
       lineend = "butt"
     ),
-    # panel.grid.major = element_blank(),
-    # panel.grid.minor = element_blank(),
     axis.line = ggplot2::element_blank(),
-    # axis.line = element_line(
-    #   colour = slate_tr,
-    #   linewidth = 1.5,
-    #   lineend = c("round", "butt")
-    # ),
-    axis.ticks = ggplot2::element_blank(),
-    # axis.ticks = element_line(
-    #   colour = slate_tr,
-    #   linewidth = 1.5,
-    #   lineend = c("round", "butt"),
-    # ),
+    axis.ticks.y = ggplot2::element_blank(),
+    axis.ticks.x = ggplot2::element_line(
+      colour = text_grey,
+      linewidth = 1.2,
+      lineend = "butt"
+    ),
+    axis.ticks.length = grid::unit(5, "mm"),
+    axis.minor.ticks.x.bottom = ggplot2::element_line(colour = slate_tr),
+    axis.minor.ticks.length = grid::unit(3, "mm"),
     axis.text.x = ggplot2::element_text(
       size = 18,
-      angle = 45,
-      vjust = 0.5,
-      hjust = 0.5,
-      margin = ggplot2::margin(t = 8, b = 16)
+      margin = ggplot2::margin(t = 12, b = 8)
     ),
     axis.text.y = ggplot2::element_text(
       size = 18,
-      margin = ggplot2::margin(r = 8, l = 16)
+      margin = ggplot2::margin(r = 12, l = 8)
     ),
     strip.background = ggplot2::element_rect(fill = dark_slate, colour = NA),
     strip.text = ggplot2::element_text(colour = "grey95", size = 14),
