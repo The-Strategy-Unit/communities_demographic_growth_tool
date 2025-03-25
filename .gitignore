@@ -87,6 +87,7 @@ venv.bak/
 # Data files
 *.csv
 *.parquet
+*.arrow
 *.rds
 *.xml
 
