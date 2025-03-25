@@ -34,5 +34,8 @@ Imports:
     tibble,
     tidyr,
     tidyselect
+Suggests:
+    brickster,
+    usethis
 Remotes:
     The-Strategy-Unit/StrategyUnitTheme
