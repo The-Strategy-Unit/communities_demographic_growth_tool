@@ -34,3 +34,4 @@ Imports:
     tidyselect
 Remotes:
     The-Strategy-Unit/StrategyUnitTheme
+LazyData: true
