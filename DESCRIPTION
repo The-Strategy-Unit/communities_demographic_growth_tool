@@ -7,7 +7,7 @@ Authors@R:
     person("Rhian", "Davies", email = "rhian.davies25@nhs.net", role = "aut"),
     person("The Strategy Unit", role = "fnd")
     )
-Description: A shiny application to show the impact of demographic growth on community services using the CSDS dataset.
+Description: A Shiny application to show the projected impact of demographic growth on community services, using the NHS England CSDS dataset.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
