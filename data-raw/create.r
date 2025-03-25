@@ -89,6 +89,9 @@ icb_lad_split <- icb_lad_split_init |>
   dplyr::mutate(lad_n = dplyr::n(), .by = "lad18cd") |>
   dplyr::mutate(icb_lad_n = dplyr::n(), .by = c("lad18cd", "icb22cdh")) |>
   dplyr::collect() |>
+  # Weighting LADs where they are split across >1 ICB (if completely contained in a single ICB then value will be 1)
+  # For example, if a LAD has 50% of its LSOAs within an ICB and 50% in another, this will create 2 rows for that LAD
+  # in the data, each with value 0.5.
   dplyr::reframe(
     lad_icb_pct = .data[["icb_lad_n"]] / .data[["lad_n"]],
     .by = c("icb22cdh", "lad18cd")
@@ -156,6 +159,10 @@ join_popn_proj_data <- function(
 
 # MAGIC %md
 # MAGIC ## initial data read in
+
+# COMMAND ----------
+
+csds_data_full_valid
 
 # COMMAND ----------
 
@@ -682,6 +689,11 @@ nat_unique_patients_summary <- create_nat_unique_patients_summary(
 
 # COMMAND ----------
 
+csds_icb_patients_count_init
+
+# COMMAND ----------
+
+# This creates projected patient numbers by ICB and service, and nests this data
 csds_icb_patients_count <- csds_icb_patients_count_init |>
   tidyr::nest(.by = tidyselect::all_of(c(icb_cols, sv))) |>
   dplyr::mutate(across(
