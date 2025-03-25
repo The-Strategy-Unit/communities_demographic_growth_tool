@@ -31,12 +31,10 @@ icb_popn_fy_projected <- readr::read_rds("icb_lad_split.rds") |>
   dplyr::summarise(
     proj_popn_by_fy_age = sum(.data[["fin_year_popn"]]),
     .by = c("icb22cdh", "fin_year", "age_int")
-  ) |>
-  readr::write_rds("icb_popn_fy_projected.rds")
+  )
 
 nat_popn_fy_projected <- popn_fy_projected |>
   dplyr::summarise(
     proj_popn_by_fy_age = sum(.data[["fin_year_popn"]]),
     .by = c("fin_year", "age_int")
-  ) |>
-  readr::write_rds("nat_popn_fy_projected.rds")
+  )
