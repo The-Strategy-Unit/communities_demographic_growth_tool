@@ -26,3 +26,20 @@ popn_proj_tidy <- popn_proj_orig |>
   # in future steps, using lead() and first().
   dplyr::arrange(dplyr::pick("cal_yr")) |>
   readr::write_rds("popn_proj_tidy.rds")
+
+
+lsoa_lad18_lookup <- boundr::lookup("lsoa", "lad", within_year = 2018) |>
+  dplyr::select(tidyselect::ends_with("cd"))
+
+icb_lad_split <- boundr::opts(return_width = "full") |>
+  boundr::lookup("lsoa", "icb", lookup_year = 2011, opts = _) |>
+  dplyr::select(c("lsoa11cd", "icb22cdh")) |>
+  dplyr::left_join(lsoa_lad18_lookup, "lsoa11cd") |>
+  dplyr::mutate(lad_n = dplyr::n(), .by = "lad18cd") |>
+  dplyr::mutate(icb_lad_n = dplyr::n(), .by = c("lad18cd", "icb22cdh")) |>
+  dplyr::reframe(
+    lad_icb_pct = .data[["icb_lad_n"]] / .data[["lad_n"]],
+    .by = c("icb22cdh", "lad18cd")
+  ) |>
+  dplyr::distinct() |>
+  readr::write_rds("icb_lad_split.rds")
