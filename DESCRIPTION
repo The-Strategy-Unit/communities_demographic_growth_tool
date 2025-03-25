@@ -15,23 +15,20 @@ RoxygenNote: 7.3.2
 Depends:
     R (>= 4.1)
 Imports:
-    arrow,
     bslib,
     dplyr (>= 1.1),
     forcats,
     ggplot2,
     glue,
     gt,
-    here,
     purrr,
     rlang,
     scales,
     shiny,
     StrategyUnitTheme,
     tibble,
-    tidyr (>= 1.3),
+    tidyr,
     tidyselect
 Remotes:
-    The-Strategy-Unit/StrategyUnitTheme,
-    tidyverse/tidyr
+    The-Strategy-Unit/StrategyUnitTheme
 LazyData: true
