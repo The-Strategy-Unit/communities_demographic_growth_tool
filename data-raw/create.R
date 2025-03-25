@@ -145,7 +145,7 @@ join_popn_proj_data <- function(
       .keep = "unused"
     ) |>
     dplyr::summarise(
-      across("projected", sum),
+      dplyr::across("projected", sum),
       .by = c("fin_year", "age_int")
     ) |>
     dplyr::arrange(dplyr::pick(c("fin_year", "age_int")))
