@@ -1,10 +1,9 @@
 get_total_fy_count <- function(dat, fy) {
-  count_col <- paste0("projected_", type)
   dat |>
     pluck_data() |>
     dplyr::filter(.data[["fin_year"]] == {{ fy }}) |>
     dplyr::reframe(across("data", dplyr::bind_rows)) |>
-    purrr::pluck("data", count_col) |>
+    purrr::pluck("data", "projected_count") |>
     sum()
 }
 
