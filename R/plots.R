@@ -9,7 +9,7 @@ create_main_projection_chart <- function(.data, horizon, label) {
     ) |>
     add_broad_age_groups() |>
     dplyr::summarise(
-      dplyr::across("projected_contacts", sum),
+      dplyr::across("projected_count", sum),
       .by = c("fin_year", "broad_age_cat")
     )
 
@@ -22,7 +22,7 @@ create_main_projection_chart <- function(.data, horizon, label) {
   full_data |>
     ggplot2::ggplot(ggplot2::aes(
       x = .data$fin_year,
-      y = .data$projected_contacts,
+      y = .data$projected_count,
       group = .data$broad_age_cat
     )) +
     ggplot2::geom_line(linewidth = 1, colour = "grey") +
