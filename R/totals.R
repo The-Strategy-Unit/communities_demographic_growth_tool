@@ -7,36 +7,26 @@ get_total_fy_count <- function(dat, fy) {
     purrr::pluck("data", count_col) |>
     sum()
 }
-get_icb_total_fy_count <- function(icb_data, fy = "2022_23") {
-  get_total_fy_count(icb_data, fy)
-}
-get_national_total_fy_count <- function(fy = "2022_23") {
-  get_total_fy_count(get_all_national_data(), fy)
-}
 
-get_icb_pct_change_total_fy <- function(
-  icb_data,
-  baseline_year = "2022_23",
-  horizon_year = "2042_43"
-) {
-  b <- get_icb_total_fy_count(icb_data, baseline_year)
-  h <- get_icb_total_fy_count(icb_data, horizon_year)
-  round((h - b) * 100 / b, 1)
-}
-get_national_pct_change_fy <- function(
-  baseline_year = "2022_23",
-  horizon_year = "2042_43"
-) {
-  nat_data <- get_all_national_data()
-  b <- get_national_total_fy_count(nat_data, baseline_year)
-  h <- get_national_total_fy_count(nat_data, horizon_year)
-  round((h - b) * 100 / b, 1)
+get_national_sentence <- function() {
+  dat <- get_all_national_data("Contacts")
+  fmt <- \(x) format(round(x, -3), big.mark = ",")
+  bas <- get_total_fy_count(dat, "2022_23")
+  hrz <- get_total_fy_count(dat, "2042_43")
+  percent_change <- round((hrz - bas) * 100 / bas, 1)
+
+  glue::glue(
+    "The total number of contacts for England is {fmt(bas)}.<br /><br />
+      By the year 2042/43 this is predicted to rise to {fmt(hrz)},
+      an increase of {percent_change}%."
+  ) |>
+    htmltools::HTML()
 }
 
 get_icb_sentence <- function(dat, horizon) {
   fmt <- \(x) format(round(x, -3), big.mark = ",")
-  bas <- get_icb_total_fy_count(dat, "2022_23")
-  hrz <- get_icb_total_fy_count(dat, horizon)
+  bas <- get_total_fy_count(dat, "2022_23")
+  hrz <- get_total_fy_count(dat, horizon)
   percent_change <- round((hrz - bas) * 100 / bas, 1)
   horizon <- stringr::str_replace(horizon, '_', '/')
 
