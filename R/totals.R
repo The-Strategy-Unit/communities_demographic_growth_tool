@@ -2,16 +2,27 @@ get_total_fy_count <- function(dat, fy) {
   dat |>
     pluck_data() |>
     dplyr::filter(.data[["fin_year"]] == {{ fy }}) |>
-    dplyr::reframe(across("data", dplyr::bind_rows)) |>
+    dplyr::reframe(dplyr::across("data", dplyr::bind_rows)) |>
     purrr::pluck("data", "projected_count") |>
     sum()
 }
 
+get_national_baseline_count <- function(measure) {
+  get_total_fy_count(get_all_national_data(measure), "2022_23")
+}
+get_national_horizon_count <- function(measure) {
+  get_total_fy_count(get_all_national_data(measure), "2042_43")
+}
+get_national_pct_change <- function(measure) {
+  bas <- get_national_baseline_count(measure)
+  hrz <- get_national_horizon_count(measure)
+  round((hrz - bas) * 100 / bas, 1)
+}
+
 get_national_sentence <- function() {
-  dat <- get_all_national_data("Contacts")
   fmt <- \(x) format(round(x, -3), big.mark = ",")
-  bas <- get_total_fy_count(dat, "2022_23")
-  hrz <- get_total_fy_count(dat, "2042_43")
+  bas <- get_national_baseline_count("Contacts")
+  hrz <- get_national_horizon_count("Contacts")
   percent_change <- round((hrz - bas) * 100 / bas, 1)
 
   glue::glue(
