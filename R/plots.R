@@ -1,4 +1,4 @@
-create_main_projection_chart <- function(.data, horizon, label) {
+create_main_projection_chart <- function(.data, horizon) {
   conv_lab <- \(x) {
     paste0(format(x, "%Y"), "/", (as.integer(format(x, "%Y")) + 1) %% 100)
   }
@@ -60,16 +60,14 @@ create_main_projection_chart <- function(.data, horizon, label) {
 plot_national_contacts_by_year <- function(measure = "Contacts") {
   create_main_projection_chart(
     get_all_national_data(measure),
-    horizon = "2042_43",
-    label = "National"
+    horizon = "2042_43"
   )
 }
 
 plot_icb_projected_count_by_year <- function(icb_data, horizon) {
   create_main_projection_chart(
     icb_data[["data"]][[1]],
-    horizon = horizon,
-    label = icb_data[["icb22nm"]]
+    horizon = horizon
   )
 }
 
