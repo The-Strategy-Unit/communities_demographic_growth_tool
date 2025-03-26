@@ -79,16 +79,16 @@ icb_server <- function(id) {
       get_icb_sentence(get_icb_data(), horizon = input$horizon)
     })
 
-    output$icb_contacts_by_year <- shiny::renderPlot({
-      plot_icb_contacts_by_year(get_icb_data(), horizon = input$horizon)
+    output$icb_measure_by_year <- shiny::renderPlot({
+      plot_icb_measure_by_year(get_icb_data(), horizon = input$horizon)
     })
 
     output$percent_change_by_age <- shiny::renderPlot({
       plot_percent_change_by_age(get_icb_data(), horizon = input$horizon)
     })
 
-    output$contacts_per_population <- shiny::renderPlot({
-      plot_contacts_per_population(get_icb_data())
+    output$count_per_population <- shiny::renderPlot({
+      plot_count_per_population(get_icb_data())
     })
 
     output$percent_change_by_service <- shiny::renderPlot({
