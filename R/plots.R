@@ -38,7 +38,7 @@ create_main_projection_chart <- function(.data, horizon, label) {
     ) +
     ggplot2::labs(x = NULL, y = NULL) +
     ggplot2::scale_y_continuous(
-      labels = scales::label_number(scale = 1e-6, suffix = "mn")
+      labels = scales::label_number(scale = 1e-6, suffix = "m")
     ) +
     ggplot2::scale_x_date(
       breaks = seq.Date(as.Date("2022-01-01"), by = "5 years", length.out = 5),
@@ -57,24 +57,28 @@ create_main_projection_chart <- function(.data, horizon, label) {
     su_chart_theme()
 }
 
-plot_national_contacts_by_year <- function() {
+plot_national_contacts_by_year <- function(measure = "Contacts") {
   create_main_projection_chart(
-    get_national_contacts(),
+    get_all_national_data(measure),
     horizon = "2042_43",
-    "national"
+    label = "National"
   )
 }
 
-plot_icb_contacts_by_year <- function(icb_data, horizon) {
+plot_icb_projected_count_by_year <- function(icb_data, horizon) {
   create_main_projection_chart(
     icb_data[["data"]][[1]],
     horizon = horizon,
-    icb_data[["icb22nm"]]
+    label = icb_data[["icb22nm"]]
   )
 }
 
-plot_percent_change_by_age <- function(icb_data, horizon = "2042_43") {
-  list(get_national_contacts(), icb_data[["data"]][[1]]) |>
+plot_percent_change_by_age <- function(
+  icb_data,
+  measure,
+  horizon = "2042_43"
+) {
+  list(get_national_contacts(measure), icb_data[["data"]][[1]]) |>
     rlang::set_names(c("England", icb_data[["icb22nm"]])) |>
     dplyr::bind_rows(.id = "type") |>
     dplyr::mutate(dplyr::across("type", forcats::fct_inorder)) |>
@@ -111,8 +115,8 @@ plot_percent_change_by_age <- function(icb_data, horizon = "2042_43") {
     su_chart_theme()
 }
 
-plot_contacts_per_population <- function(icb_data) {
-  list(get_national_contacts(), icb_data[["data"]][[1]]) |>
+plot_count_per_population <- function(icb_data, measure) {
+  list(get_national_contacts(measure), icb_data[["data"]][[1]]) |>
     rlang::set_names(c("England", icb_data[["icb22nm"]])) |>
     dplyr::bind_rows(.id = "type") |>
     dplyr::mutate(dplyr::across("type", forcats::fct_inorder)) |>
@@ -142,8 +146,12 @@ plot_contacts_per_population <- function(icb_data) {
 }
 
 
-plot_percent_change_by_service <- function(icb_data, horizon = "2042_43") {
-  list(get_national_contacts(), icb_data[["data"]][[1]]) |>
+plot_percent_change_by_service <- function(
+  icb_data,
+  measure,
+  horizon = "2042_43"
+) {
+  list(get_national_contacts(measure), icb_data[["data"]][[1]]) |>
     rlang::set_names(c("England", icb_data[["icb22nm"]])) |>
     dplyr::bind_rows(.id = "type") |>
     dplyr::mutate(dplyr::across("type", forcats::fct_inorder)) |>
