@@ -58,17 +58,20 @@ create_main_projection_chart <- function(.data, horizon) {
 }
 
 plot_national_contacts_by_year <- function(measure = "Contacts") {
-  create_main_projection_chart(
-    get_all_national_data(measure),
-    horizon = "2042_43"
-  )
+  get_all_national_data(measure) |>
+    pluck_data() |>
+    create_main_projection_chart(horizon = "2042_43") |>
+    enhance_national_plot()
+}
+
+enhance_national_plot <- function(p) {
+  p
 }
 
 plot_icb_projected_count_by_year <- function(icb_data, horizon) {
-  create_main_projection_chart(
-    icb_data[["data"]][[1]],
-    horizon = horizon
-  )
+  icb_data |>
+    pluck_data() |>
+    create_main_projection_chart(horizon = horizon)
 }
 
 plot_percent_change_by_age <- function(
