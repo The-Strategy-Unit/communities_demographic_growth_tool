@@ -30,6 +30,35 @@ get_national_pct_change_total_fy_contacts <- function(
   round((h - b) * 100 / b, 1)
 }
 
+get_national_sentence <- function() {
+  horizon <- "2042_43" # Always show longest horizon for National
+
+  total_baseline <-
+    get_national_total_fy_contacts("2022_23") |>
+    round(-3) |>
+    format(big.mark = ",")
+
+  total_horizon <-
+    get_national_total_fy_contacts(horizon) |>
+    round(-3) |>
+    format(big.mark = ",")
+
+  percent_change <-
+    get_national_pct_change_total_fy_contacts(
+      baseline_year = "2022_23",
+      horizon_year = horizon
+    )
+
+  glue::glue(
+    "The total number of contacts for England is
+       {total_baseline}. <br><br>
+      By the year {stringr::str_replace(horizon, '_', '/')}
+       this is predicted to rise to {total_horizon},
+       an increase of {percent_change}%."
+  ) |>
+    htmltools::HTML()
+}
+
 get_icb_sentence <- function(dat, horizon) {
   total_baseline <-
     get_icb_total_fy_contacts(dat, "2022_23") |>
