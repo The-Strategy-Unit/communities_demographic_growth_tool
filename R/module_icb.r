@@ -64,8 +64,15 @@ icb_ui <- function(id) {
 icb_server <- function(id) {
   shiny::moduleServer(id, function(input, output, session) {
     get_icb_data <- shiny::reactive({
-      get_all_icbs_data() |>
-        dplyr::filter(.data$icb22cdh == input$icb)
+      get_all_icb_data(measure = input$measure) |>
+        dplyr::filter(.data$icb22cdh == input$icb) |>
+        dplyr::select(c("icb22cdh", "icb22nm", "data"))
+    })
+
+    get_icb_dq_data <- shiny::reactive({
+      get_all_icb_data(measure = input$measure) |>
+        dplyr::filter(.data$icb22cdh == input$icb) |>
+        dplyr::select(!"data")
     })
 
     output$icb_sentence <- shiny::renderUI({
@@ -86,6 +93,10 @@ icb_server <- function(id) {
 
     output$percent_change_by_service <- shiny::renderPlot({
       plot_percent_change_by_service(get_icb_data(), horizon = input$horizon)
+    })
+
+    output$data_quality_summary_table <- shiny::renderDataTable({
+      create_icb_dq_summary_table(get_icb_dq_data(), measure = input$measure)
     })
   })
 }
