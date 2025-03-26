@@ -159,10 +159,10 @@ plot_percent_change_by_service <- function(
     dplyr::filter(.data$fin_year %in% c("2022_23", horizon)) |>
     dplyr::summarise(
       value = sum(.data[["projected_count"]]),
-      .by = c("type", "fin_year", "team_type")
+      .by = c("type", "fin_year", "service")
     ) |>
     tidyr::pivot_wider(
-      id_cols = c("type", "team_type"),
+      id_cols = c("type", "service"),
       names_from = "fin_year",
       names_prefix = "yr_"
     ) |>
@@ -172,7 +172,7 @@ plot_percent_change_by_service <- function(
         .data[["yr_2022_23"]],
       .keep = "unused"
     ) |>
-    ggplot2::ggplot(ggplot2::aes(.data$pct_change, .data$team_type)) +
+    ggplot2::ggplot(ggplot2::aes(.data$pct_change, .data$service)) +
     ggplot2::geom_col(
       ggplot2::aes(fill = .data$type),
       position = "dodge",
