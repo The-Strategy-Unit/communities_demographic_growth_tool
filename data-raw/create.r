@@ -7,28 +7,83 @@
 # DBTITLE 1,initial datasets
 sc <- sparklyr::spark_connect(method = "databricks")
 
-csds_data_full_valid <- dplyr::tbl(
+csds_data_init <- dplyr::tbl(
   sc,
   dbplyr::in_catalog("strategyunit", "csds_jg", "full_contact_based_valid")
-)
+) |>
+  dplyr::select(c(
+    fin_year = "Der_Financial_Year",
+    "icb22cdh",
+    "icb22nm",
+    patient_id = "Person_ID",
+    contact_date = "Contact_Date",
+    lsoa11cd = "Der_Postcode_yr2011_LSOA",
+    age_int = "AgeFirstContact2223",
+    gender_cat = "Gender",
+    submitter_id = "OrgID_Provider",
+    attendance_cat = "AttendanceOutcomeSU",
+    service = "TeamTypeDescription"
+  ))
+lsoa11_icb22_lookup <- dplyr::tbl(
+  sc,
+  dbplyr::in_catalog("strategyunit", "csds_fb", "lsoa11_icb22_lookup")
+) |>
+  dplyr::select(tidyselect::matches("(cd|cdh)$"))
 lsoa11_lad18_lookup_eng <- dplyr::tbl(
   sc,
   dbplyr::in_catalog("strategyunit", "csds_fb", "lsoa11_lad18_lookup_eng")
-)
+) |>
+  dplyr::select(tidyselect::matches("cd$"))
 consistent_submitters <- dplyr::tbl(
   sc,
   dbplyr::in_catalog("strategyunit", "csds_fb", "consistent_submitters_2022_23")
-)
-icb_lad_split_init <- dplyr::tbl(
-  sc,
-  dbplyr::in_catalog("strategyunit", "csds_fb", "icb_lad_split")
-)
+) |>
+  dplyr::pull("provider_org_id")
 
-consistent_subs <- dplyr::pull(consistent_submitters, "provider_org_id")
-lsoa11_lad18_lookup_eng <- dplyr::select(
-  lsoa11_lad18_lookup_eng,
-  tidyselect::ends_with("cd")
-)
+
+# COMMAND ----------
+
+# DBTITLE 1,helper functions
+db_vol <- "/Volumes/strategyunit/csds_fb/csds_patients"
+db_write_rds <- \(x, f) readr::write_rds(x, glue::glue("{db_vol}/{f}"))
+db_read_rds <- \(f) readr::read_rds(glue::glue("{db_vol}/{f}"))
+
+# COMMAND ----------
+
+# DBTITLE 1,reusable variables to refer to key columns
+icb_cols <- c("icb22cdh", "icb22nm")
+dq_cols <- c("consistent_ind", "attendance_cat")
+sv <- "service"
+lad <- "lad18cd"
+join_cols <- c(lad, "age_int", "gender_cat")
+count_cols <- c("fin_year", "age_int")
+pt <- "patient_id"
+ncp <- c("proj_uniq_px_by_fy_age", "proj_popn_by_fy_age", count_cols)
+ncc <- c("proj_popn_by_fy_age", count_cols)
+
+# COMMAND ----------
+
+# DBTITLE 1,core function for growing patient and contact numbers
+join_popn_proj_data <- function(dat, pfp = popn_fy_projected) {
+  join_cols <- c("lad18cd", "age_int", "gender_cat")
+  dat |>
+    dplyr::left_join(pfp, join_cols, relationship = "many-to-many") |>
+    dplyr::mutate(
+      projected_count = .data[["count"]] * .data[["growth_coeff"]],
+      .keep = "unused"
+    ) |>
+    dplyr::summarise(
+      dplyr::across("projected_count", sum),
+      .by = c("fin_year", "age_int")
+    ) |>
+    dplyr::arrange(dplyr::pick(c("fin_year", "age_int")))
+}
+
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ## population projections and growth setup
 
 # COMMAND ----------
 
@@ -84,30 +139,31 @@ popn_fy_projected <- popn_proj_tidy |>
 # COMMAND ----------
 
 # DBTITLE 1,assign LADs (including partially) to ICBs
-icb_lad_split <- icb_lad_split_init |>
+lad_proportion_by_icb <- lsoa11_icb22_lookup |>
   dplyr::left_join(lsoa11_lad18_lookup_eng, "lsoa11cd") |>
   dplyr::mutate(lad_n = dplyr::n(), .by = "lad18cd") |>
   dplyr::mutate(icb_lad_n = dplyr::n(), .by = c("lad18cd", "icb22cdh")) |>
   dplyr::collect() |>
-  # Weighting LADs where they are split across >1 ICB (if completely contained in a single ICB then value will be 1)
+  # Weighting LADs where they are split across >1 ICB (if completely contained in a single ICB then value will be 1).
   # For example, if a LAD has 50% of its LSOAs within an ICB and 50% in another, this will create 2 rows for that LAD
-  # in the data, each with value 0.5.
+  # in the data, each with value 0.5. This split is therefore not a completely accurate split by population, but using
+  # number of LSOAs as an approximation to this.
   dplyr::reframe(
-    lad_icb_pct = .data[["icb_lad_n"]] / .data[["lad_n"]],
+    proportion = .data[["icb_lad_n"]] / .data[["lad_n"]],
     .by = c("icb22cdh", "lad18cd")
   ) |>
   dplyr::distinct()
 
 # COMMAND ----------
 
-icb_popn_fy_projected <- icb_lad_split |>
+icb_popn_fy_projected <- lad_proportion_by_icb |>
   dplyr::left_join(
     popn_fy_projected,
     "lad18cd",
     relationship = "many-to-many"
   ) |>
   dplyr::mutate(
-    across("fin_year_popn", \(x) x * .data[["lad_icb_pct"]]),
+    across("fin_year_popn", \(x) x * proportion),
     .keep = "unused"
   ) |>
   dplyr::summarise(
@@ -123,37 +179,9 @@ nat_popn_fy_projected <- popn_fy_projected |>
 
 # COMMAND ----------
 
-# DBTITLE 1,reusable variables to refer to key columns
-icb_cols <- c("icb22cdh", "icb22nm")
-dq_cols <- c("consistent_ind", "attendance_cat")
-sv <- "service"
-join_cols <- c("lad18cd", "age_int", "gender_cat")
-pt <- "patient_id"
-ncp <- c("proj_uniq_px_by_fy_age", "proj_popn_by_fy_age", "fin_year", "age_int")
-ncc <- c("proj_popn_by_fy_age", "fin_year", "age_int")
-
-# COMMAND ----------
-
-# DBTITLE 1,core function for growing patient and contact numbers
-join_popn_proj_data <- function(
-  dat,
-  type = c("patients", "contacts"),
-  pfp = popn_fy_projected
-) {
-  join_cols <- c("lad18cd", "age_int", "gender_cat")
-  dat |>
-    dplyr::left_join(pfp, join_cols, relationship = "many-to-many") |>
-    dplyr::mutate(
-      projected = .data[[type]] * .data[["growth_coeff"]],
-      .keep = "unused"
-    ) |>
-    dplyr::summarise(
-      dplyr::across("projected", sum),
-      .by = c("fin_year", "age_int")
-    ) |>
-    dplyr::arrange(dplyr::pick(c("fin_year", "age_int")))
-}
-
+db_write_rds(popn_fy_projected, "popn_fy_projected.rds")
+db_write_rds(icb_popn_fy_projected, "icb_popn_fy_projected.rds")
+db_write_rds(nat_popn_fy_projected, "nat_popn_fy_projected.rds")
 
 # COMMAND ----------
 
@@ -162,33 +190,10 @@ join_popn_proj_data <- function(
 
 # COMMAND ----------
 
-csds_data_full_valid
-
-# COMMAND ----------
-
-# DBTITLE 1,create csds_data_init
-# https://www.datadictionary.nhs.uk/data_elements/attendance_status.html
-# 5 - attended on time
-# 6 - attended late but was seen
-# 7 - attended late and was not seen
-# 2 - patient cancelled
-# 3 - DNA (without notice)
-# 4 - provider cancelled or postponed
-csds_data_init <- csds_data_full_valid |>
-  dplyr::select(c(
-    fin_year = "Der_Financial_Year",
-    "icb22cdh",
-    "icb22nm",
-    patient_id = "Person_ID",
-    contact_date = "Contact_Date",
-    lsoa11cd = "Der_Postcode_yr2011_LSOA",
-    age_int = "AgeFirstContact2223",
-    gender_cat = "Gender",
-    submitter_id = "OrgID_Provider",
-    attendance_cat = "AttendanceOutcomeSU",
-    service = "TeamTypeDescription"
-  )) |>
+# DBTITLE 1,create csds_data_tidy
+csds_data_tidy <- csds_data_init |>
   dplyr::filter(!dplyr::if_any("patient_id", is.na)) |>
+  dbplyr::window_order(dplyr::pick("contact_date")) |>
   # Very rough guess at when birthday might fall - earliest contact date
   # within each recorded year of age. (Including 2021-22 data to improve guess).
   dplyr::mutate(
@@ -208,13 +213,20 @@ csds_data_init <- csds_data_full_valid |>
   dplyr::filter(dplyr::if_any("fin_year", \(x) x == "2022/23")) |>
   dplyr::mutate(
     consistent_ind = dplyr::if_else(
-      .data[["submitter_id"]] %in% {{ consistent_subs }},
+      .data[["submitter_id"]] %in% {{ consistent_submitters }},
       1L,
       0L
     ),
     dplyr::across("age_int", as.integer),
     dplyr::across("age_int", \(x) dplyr::if_else(x > 90L, 90L, x)),
     dplyr::across("gender_cat", \(x) dplyr::if_else(x == "Unknown", NA, x)),
+    # https://www.datadictionary.nhs.uk/data_elements/attendance_status.html
+    # 5 - attended on time
+    # 6 - attended late but was seen
+    # 7 - attended late and was not seen
+    # 2 - patient cancelled
+    # 3 - DNA (without notice)
+    # 4 - provider cancelled or postponed
     dplyr::across("attendance_cat", \(x) {
       dplyr::case_when(
         x %in% c("5", "6") ~ "Attended",
@@ -227,7 +239,7 @@ csds_data_init <- csds_data_full_valid |>
   ) |>
   dplyr::left_join(lsoa11_lad18_lookup_eng, "lsoa11cd") |>
   dplyr::select(!c("fin_year", "lsoa11cd")) |>
-  dplyr::group_by(patient_id) |>
+  dplyr::group_by(dplyr::pick("patient_id")) |>
   # This step just gets rid of NAs. Values filled may be superseded by next
   # line. It reduces NAs in the data from 172k to 17k.
   tidyr::fill("age_int", .direction = "downup") |>
@@ -235,7 +247,7 @@ csds_data_init <- csds_data_full_valid |>
   # birthday falls between April and September then we take their higher
   # recorded age in the dataset; if we think it falls between October and March
   # we take their lower recorded age in the dataset. This is in order to match
-  # a mid-year ("as at October 1st") date for the population projection.)
+  # a mid-year ("as at October 1st") theoretical date for ONS population data.)
   # Then fill that age across all rows for that patient (including overwriting
   # any existing other recorded age... there should be a maximum of 2 ages!)
   dplyr::mutate(
@@ -258,33 +270,31 @@ csds_data_init <- csds_data_full_valid |>
 
 # DBTITLE 1,save csds_data_init to parquet
 sparklyr::spark_write_parquet(
-  csds_data_init,
-  "/Volumes/strategyunit/csds_fb/csds_patients/csds_data_init",
+  csds_data_tidy,
+  glue::glue("{db_vol}/csds_data_tidy"),
   mode = "overwrite"
 )
 
 # COMMAND ----------
 
-csds_data_init <- sparklyr::spark_read_parquet(
-  sc,
-  "/Volumes/strategyunit/csds_fb/csds_patients/csds_data_init"
-)
+csds_data_tidy <- sparklyr::spark_read_parquet(sc, "csds_data_tidy", glue::glue("{db_vol}/csds_data_tidy"))
 
 # COMMAND ----------
 
 # DBTITLE 1,contacts count
-contacts_count_init <- csds_data_init |>
+contacts_count_init <- csds_data_tidy |>
   dplyr::count(
     dplyr::pick(tidyselect::all_of(c(icb_cols, dq_cols, sv, join_cols))),
-    name = "contacts"
+    name = "count"
   )
 
 # COMMAND ----------
 
 # DBTITLE 1,patients count
-patients_count_init <- csds_data_init |>
+patients_count_init <- csds_data_tidy |>
   dplyr::count(
-    dplyr::pick(tidyselect::all_of(c(icb_cols, dq_cols, sv, pt, join_cols)))
+    dplyr::pick(tidyselect::all_of(c(icb_cols, dq_cols, sv, pt, join_cols))),
+    name = "count"
   )
 
 # COMMAND ----------
@@ -297,31 +307,31 @@ patients_count_init <- csds_data_init |>
 # DBTITLE 1,national dq summary function (contacts)
 create_nat_contacts_summary <- function(contacts_count_init) {
   all_unfiltd <- contacts_count_init |>
-    dplyr::summarise(nat_contacts_all_unfiltd = sum(.data[["contacts"]]))
+    dplyr::summarise(nat_contacts_all_unfiltd = sum(.data[["count"]]))
 
   missing_icb <- contacts_count_init |>
     dplyr::filter(is.na(.data[["icb22cdh"]])) |>
-    dplyr::summarise(nat_contacts_missing_icb = sum(.data[["contacts"]]))
+    dplyr::summarise(nat_contacts_missing_icb = sum(.data[["count"]]))
 
   inconsistnt <- contacts_count_init |>
     dplyr::filter(.data[["consistent_ind"]] == 0L) |>
-    dplyr::summarise(nat_contacts_inconsistnt = sum(.data[["contacts"]]))
+    dplyr::summarise(nat_contacts_inconsistnt = sum(.data[["count"]]))
 
   not_attnded <- contacts_count_init |>
     dplyr::filter(.data[["attendance_cat"]] == "Did Not Attend") |>
-    dplyr::summarise(nat_contacts_not_attnded = sum(.data[["contacts"]]))
+    dplyr::summarise(nat_contacts_not_attnded = sum(.data[["count"]]))
 
   canclld_unk <- contacts_count_init |>
     dplyr::filter(.data[["attendance_cat"]] %in% c("Cancelled", "Unknown")) |>
-    dplyr::summarise(nat_contacts_canclld_unk = sum(.data[["contacts"]]))
+    dplyr::summarise(nat_contacts_canclld_unk = sum(.data[["count"]]))
 
   missing_age <- contacts_count_init |>
     dplyr::filter(is.na(.data[["age_int"]])) |>
-    dplyr::summarise(nat_contacts_missing_age = sum(.data[["contacts"]]))
+    dplyr::summarise(nat_contacts_missing_age = sum(.data[["count"]]))
 
   missing_gen <- contacts_count_init |>
     dplyr::filter(is.na(.data[["gender_cat"]])) |>
-    dplyr::summarise(nat_contacts_missing_gen = sum(.data[["contacts"]]))
+    dplyr::summarise(nat_contacts_missing_gen = sum(.data[["count"]]))
 
   final_count <- contacts_count_init |>
     dplyr::filter(
@@ -329,7 +339,7 @@ create_nat_contacts_summary <- function(contacts_count_init) {
         .data[["attendance_cat"]] == "Attended" &
         dplyr::if_all(tidyselect::all_of(join_cols), \(x) !is.na(x))
     ) |>
-    dplyr::summarise(nat_contacts_final_count = sum(.data[["contacts"]]))
+    dplyr::summarise(nat_contacts_final_count = sum(.data[["count"]]))
 
   list(
     all_unfiltd,
@@ -343,6 +353,7 @@ create_nat_contacts_summary <- function(contacts_count_init) {
   ) |>
     purrr::map(\(x) dplyr::mutate(x, national = "National", .before = 1)) |>
     purrr::reduce(\(x, y) dplyr::left_join(x, y, "national")) |>
+    dplyr::select(!"national") |>
     dplyr::mutate(
       nat_contacts_total_excld = .data[["nat_contacts_all_unfiltd"]] -
         .data[["nat_contacts_final_count"]],
@@ -357,42 +368,42 @@ create_icb_contacts_summary <- function(contacts_count_init) {
   contacts_count_init <- dplyr::filter(contacts_count_init, !is.na("icb22cdh"))
   all_unfiltd <- contacts_count_init |>
     dplyr::summarise(
-      icb_contacts_all_unfiltd = sum(.data[["contacts"]]),
+      icb_contacts_all_unfiltd = sum(.data[["count"]]),
       .by = "icb22cdh"
     )
 
   inconsistnt <- contacts_count_init |>
     dplyr::filter(.data[["consistent_ind"]] == 0L) |>
     dplyr::summarise(
-      icb_contacts_inconsistnt = sum(.data[["contacts"]]),
+      icb_contacts_inconsistnt = sum(.data[["count"]]),
       .by = "icb22cdh"
     )
 
   not_attnded <- contacts_count_init |>
     dplyr::filter(.data[["attendance_cat"]] == "Did Not Attend") |>
     dplyr::summarise(
-      icb_contacts_not_attnded = sum(.data[["contacts"]]),
+      icb_contacts_not_attnded = sum(.data[["count"]]),
       .by = "icb22cdh"
     )
 
   canclld_unk <- contacts_count_init |>
     dplyr::filter(.data[["attendance_cat"]] %in% c("Cancelled", "Unknown")) |>
     dplyr::summarise(
-      icb_contacts_canclld_unk = sum(.data[["contacts"]]),
+      icb_contacts_canclld_unk = sum(.data[["count"]]),
       .by = "icb22cdh"
     )
 
   missing_age <- contacts_count_init |>
     dplyr::filter(is.na(.data[["age_int"]])) |>
     dplyr::summarise(
-      icb_contacts_missing_age = sum(.data[["contacts"]]),
+      icb_contacts_missing_age = sum(.data[["count"]]),
       .by = "icb22cdh"
     )
 
   missing_gen <- contacts_count_init |>
     dplyr::filter(is.na(.data[["gender_cat"]])) |>
     dplyr::summarise(
-      icb_contacts_missing_gen = sum(.data[["contacts"]]),
+      icb_contacts_missing_gen = sum(.data[["count"]]),
       .by = "icb22cdh"
     )
 
@@ -403,7 +414,7 @@ create_icb_contacts_summary <- function(contacts_count_init) {
         dplyr::if_all(tidyselect::all_of(join_cols), \(x) !is.na(x))
     ) |>
     dplyr::summarise(
-      icb_contacts_final_count = sum(.data[["contacts"]]),
+      icb_contacts_final_count = sum(.data[["count"]]),
       .by = "icb22cdh"
     )
 
@@ -492,6 +503,7 @@ create_nat_patients_summary <- function(patients_count_init) {
   ) |>
     purrr::map(\(x) dplyr::mutate(x, national = "National", .before = 1)) |>
     purrr::reduce(\(x, y) dplyr::left_join(x, y, "national")) |>
+    dplyr::select(!"national") |>
     dplyr::mutate(
       nat_patients_total_excld = .data[["nat_patients_all_unfiltd"]] -
         .data[["nat_patients_final_count"]],
@@ -587,7 +599,7 @@ create_icb_unique_patients_summary <- function(patients_count_init) {
       .by = "patient_id"
     ) |>
     dplyr::summarise(
-      patients = dplyr::n_distinct(.data[["patient_id"]]),
+      count = dplyr::n_distinct(.data[["patient_id"]]),
       .by = tidyselect::all_of(c(icb_cols, join_cols))
     )
 }
@@ -604,7 +616,7 @@ create_nat_unique_patients_summary <- function(patients_count_init) {
       .by = "patient_id"
     ) |>
     dplyr::summarise(
-      patients = dplyr::n_distinct(.data[["patient_id"]]),
+      count = dplyr::n_distinct(.data[["patient_id"]]),
       .by = tidyselect::all_of(join_cols)
     )
 }
@@ -612,18 +624,26 @@ create_nat_unique_patients_summary <- function(patients_count_init) {
 # COMMAND ----------
 
 # DBTITLE 1,create data quality summary tables
-nat_contacts_summary <- create_nat_contacts_summary(contacts_count_init) |>
-  dplyr::collect()
-icb_contacts_summary <- create_icb_contacts_summary(contacts_count_init) |>
-  dplyr::collect()
-nat_patients_summary <- create_nat_patients_summary(patients_count_init) |>
-  dplyr::collect()
-icb_patients_summary <- create_icb_patients_summary(patients_count_init) |>
-  dplyr::collect()
+nat_contacts_summary <- create_nat_contacts_summary(contacts_count_init)
+icb_contacts_summary <- create_icb_contacts_summary(contacts_count_init)
+nat_patients_summary <- create_nat_patients_summary(patients_count_init)
+icb_patients_summary <- create_icb_patients_summary(patients_count_init)
 
 # COMMAND ----------
 
-csds_icb_patients_count_init <- patients_count_init |>
+db_write_rds(dplyr::collect(nat_contacts_summary), "nat_contacts_summary.rds")
+db_write_rds(dplyr::collect(icb_contacts_summary), "icb_contacts_summary.rds")
+db_write_rds(dplyr::collect(nat_patients_summary), "nat_patients_summary.rds")
+db_write_rds(dplyr::collect(icb_patients_summary), "icb_patients_summary.rds")
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ## counts of unique patients by age and financial year
+
+# COMMAND ----------
+
+icb_patients_count_init <- patients_count_init |>
   dplyr::filter(
     dplyr::if_any("consistent_ind", \(x) x == 1L) &
       dplyr::if_any("attendance_cat", \(x) x == "Attended") &
@@ -633,49 +653,55 @@ csds_icb_patients_count_init <- patients_count_init |>
   ) |>
   dplyr::select(!tidyselect::any_of(dq_cols)) |>
   dplyr::mutate(
-    total_pat_n = sum(.data[["n"]]),
+    total_pat_n = sum(.data[["count"]]),
     .by = tidyselect::all_of(c(icb_cols, pt))
   ) |>
   dplyr::mutate(
-    patient_lad_prop = sum(.data[["n"]]) / .data[["total_pat_n"]],
-    .by = tidyselect::all_of(c(icb_cols, "lad18cd", pt)),
+    patient_lad_prop = sum(.data[["count"]]) / .data[["total_pat_n"]],
+    .by = tidyselect::all_of(c(icb_cols, lad, pt)),
     .keep = "unused"
   ) |>
   dplyr::summarise(
-    patients = sum(.data[["patient_lad_prop"]]),
+    count = sum(.data[["patient_lad_prop"]]),
     .by = tidyselect::all_of(c(icb_cols, join_cols, sv))
-  ) |>
-  dplyr::collect()
+  )
 
 
 # COMMAND ----------
 
-# MAGIC %md
-# MAGIC ### counts of unique patients by age and financial year
+icb_patients_count_init |>
+  sparklyr::spark_write_parquet(glue::glue("{db_vol}/icb_patients_count_init"), mode = "overwrite")
 
 # COMMAND ----------
 
-icb_unique_patients_summary <- create_icb_unique_patients_summary(
-  patients_count_init
-) |>
+popn_fy_projected <- db_read_rds("popn_fy_projected.rds")
+
+# COMMAND ----------
+
+icb_unique_patients_summary <- patients_count_init |>
+  create_icb_unique_patients_summary() |>
   dplyr::collect() |>
   tidyr::nest(.by = tidyselect::all_of(icb_cols)) |>
   dplyr::mutate(across(
     "data",
-    \(x) purrr::map(x, \(x) join_popn_proj_data(x, "patients"))
+    \(x) purrr::map(x, join_popn_proj_data)
   )) |>
   tidyr::unnest("data") |>
-  dplyr::rename(proj_uniq_px_by_fy_age = "projected")
+  dplyr::rename(proj_uniq_px_by_fy_age = "projected_count")
 
 
 # COMMAND ----------
 
-nat_unique_patients_summary <- create_nat_unique_patients_summary(
-  patients_count_init
-) |>
+nat_unique_patients_summary <- patients_count_init |>
+  create_nat_unique_patients_summary() |>
   dplyr::collect() |>
-  join_popn_proj_data("patients") |>
-  dplyr::rename(proj_uniq_px_by_fy_age = "projected")
+  join_popn_proj_data() |>
+  dplyr::rename(proj_uniq_px_by_fy_age = "projected_count")
+
+# COMMAND ----------
+
+db_write_rds(icb_unique_patients_summary, "icb_unique_patients_summary.rds")
+db_write_rds(nat_unique_patients_summary, "nat_unique_patients_summary.rds")
 
 # COMMAND ----------
 
@@ -689,19 +715,30 @@ nat_unique_patients_summary <- create_nat_unique_patients_summary(
 
 # COMMAND ----------
 
-csds_icb_patients_count_init
+popn_fy_projected <- db_read_rds("popn_fy_projected.rds") 
+icb_popn_fy_projected <- db_read_rds("icb_popn_fy_projected.rds")
+nat_popn_fy_projected <- db_read_rds("nat_popn_fy_projected.rds")
+nat_patients_summary <- db_read_rds("nat_patients_summary.rds")
+icb_patients_summary <- db_read_rds("icb_patients_summary.rds")
+icb_unique_patients_summary <- db_read_rds("icb_unique_patients_summary.rds")
+nat_unique_patients_summary <- db_read_rds("nat_unique_patients_summary.rds")
+
+# COMMAND ----------
+
+icb_patients_count_init <- sc |>
+  sparklyr::spark_read_parquet(glue::glue("{db_vol}/icb_patients_count_init"))
 
 # COMMAND ----------
 
 # This creates projected patient numbers by ICB and service, and nests this data
-csds_icb_patients_count <- csds_icb_patients_count_init |>
+icb_patients_final <- icb_patients_count_init |>
+  dplyr::collect() |>
   tidyr::nest(.by = tidyselect::all_of(c(icb_cols, sv))) |>
   dplyr::mutate(across(
     "data",
-    \(x) purrr::map(x, \(x) join_popn_proj_data(x, "patients"))
+    \(x) purrr::map(x, join_popn_proj_data)
   )) |>
   tidyr::unnest("data") |>
-  dplyr::rename(projected_patients = "projected") |>
   dplyr::left_join(
     icb_unique_patients_summary,
     c("icb22cdh", "icb22nm", "fin_year", "age_int")
@@ -723,34 +760,26 @@ csds_icb_patients_count <- csds_icb_patients_count_init |>
 # COMMAND ----------
 
 # DBTITLE 1,write patient dataset 1 to rds
-csds_icb_patients_count |>
-  readr::write_rds(
-    "/Volumes/strategyunit/csds_fb/csds_patients/csds_icb_patients_count.rds"
-  )
+db_write_rds(icb_patients_final, "icb_patients_final.rds")
 
 # COMMAND ----------
 
-csds_nat_patients_count_init <- csds_icb_patients_count_init |>
+nat_patients_final <- icb_patients_count_init |>
   dplyr::summarise(
-    across("patients", sum),
+    across("count", sum),
     .by = tidyselect::all_of(c(sv, join_cols))
   ) |>
-  dplyr::mutate(national = "National", .before = 1)
-
-# COMMAND ----------
-
-csds_nat_patients_count <- csds_nat_patients_count_init |>
-  tidyr::nest(.by = tidyselect::all_of(c("national", sv))) |>
+  dplyr::collect() |>
+  tidyr::nest(.by = tidyselect::all_of(sv)) |>
   dplyr::mutate(across(
     "data",
-    \(x) purrr::map(x, \(x) join_popn_proj_data(x, "patients"))
+    \(x) purrr::map(x, join_popn_proj_data)
   )) |>
   tidyr::unnest("data") |>
-  dplyr::rename(projected_patients = "projected") |>
   dplyr::left_join(nat_unique_patients_summary, c("fin_year", "age_int")) |>
   dplyr::left_join(nat_popn_fy_projected, c("fin_year", "age_int")) |>
-  tidyr::nest(.by = "national") |>
-  dplyr::left_join(nat_patients_summary, "national") |>
+  tidyr::nest() |>
+  dplyr::bind_cols(nat_patients_summary) |>
   dplyr::relocate("data", .after = tidyselect::last_col()) |>
   dplyr::mutate(
     across("data", \(x) {
@@ -761,10 +790,7 @@ csds_nat_patients_count <- csds_nat_patients_count_init |>
 # COMMAND ----------
 
 # DBTITLE 1,write patient dataset 2 to rds
-csds_nat_patients_count |>
-  readr::write_rds(
-    "/Volumes/strategyunit/csds_fb/csds_patients/csds_nat_patients_count.rds"
-  )
+db_write_rds(nat_patients_final, "nat_patients_final.rds")
 
 # COMMAND ----------
 
@@ -773,7 +799,15 @@ csds_nat_patients_count |>
 
 # COMMAND ----------
 
-csds_icb_contacts_count_init <- contacts_count_init |>
+popn_fy_projected <- db_read_rds("popn_fy_projected.rds") 
+icb_popn_fy_projected <- db_read_rds("icb_popn_fy_projected.rds")
+nat_popn_fy_projected <- db_read_rds("nat_popn_fy_projected.rds")
+nat_contacts_summary <- db_read_rds("nat_contacts_summary.rds")
+icb_contacts_summary <- db_read_rds("icb_contacts_summary.rds")
+
+# COMMAND ----------
+
+icb_contacts_count <- contacts_count_init |>
   dplyr::filter(
     dplyr::if_any("consistent_ind", \(x) x == 1L) &
       dplyr::if_any("attendance_cat", \(x) x == "Attended") &
@@ -783,7 +817,7 @@ csds_icb_contacts_count_init <- contacts_count_init |>
   ) |>
   dplyr::select(!tidyselect::any_of(dq_cols)) |>
   dplyr::summarise(
-    across("contacts", sum),
+    across("count", sum),
     .by = tidyselect::all_of(c(icb_cols, join_cols, sv))
   ) |>
   dplyr::collect()
@@ -791,14 +825,13 @@ csds_icb_contacts_count_init <- contacts_count_init |>
 
 # COMMAND ----------
 
-csds_icb_contacts_count <- csds_icb_contacts_count_init |>
+icb_contacts_final <- icb_contacts_count |>
   tidyr::nest(.by = tidyselect::all_of(c(icb_cols, sv))) |>
   dplyr::mutate(across(
     "data",
-    \(x) purrr::map(x, \(x) join_popn_proj_data(x, "contacts"))
+    \(x) purrr::map(x, join_popn_proj_data)
   )) |>
   tidyr::unnest("data") |>
-  dplyr::rename(projected_contacts = "projected") |>
   dplyr::left_join(
     icb_popn_fy_projected,
     c("icb22cdh", "fin_year", "age_int")
@@ -816,33 +849,24 @@ csds_icb_contacts_count <- csds_icb_contacts_count_init |>
 # COMMAND ----------
 
 # DBTITLE 1,write contacts dataset 1 to rds
-csds_icb_contacts_count |>
-  readr::write_rds(
-    "/Volumes/strategyunit/csds_fb/csds_patients/csds_icb_contacts_count.rds"
-  )
+db_write_rds(icb_contacts_final, "icb_contacts_final.rds")
 
 # COMMAND ----------
 
-csds_nat_contacts_count_init <- csds_icb_contacts_count_init |>
+nat_contacts_final <- icb_contacts_count |>
   dplyr::summarise(
-    across("contacts", sum),
+    across("count", sum),
     .by = tidyselect::all_of(c(sv, join_cols))
   ) |>
-  dplyr::mutate(national = "National", .before = 1)
-
-# COMMAND ----------
-
-csds_nat_contacts_count <- csds_nat_contacts_count_init |>
-  tidyr::nest(.by = tidyselect::all_of(c("national", sv))) |>
+  tidyr::nest(.by = tidyselect::all_of(sv)) |>
   dplyr::mutate(across(
     "data",
-    \(x) purrr::map(x, \(x) join_popn_proj_data(x, "contacts"))
+    \(x) purrr::map(x, join_popn_proj_data)
   )) |>
   tidyr::unnest("data") |>
-  dplyr::rename(projected_contacts = "projected") |>
   dplyr::left_join(nat_popn_fy_projected, c("fin_year", "age_int")) |>
-  tidyr::nest(.by = "national") |>
-  dplyr::left_join(nat_contacts_summary, "national") |>
+  tidyr::nest() |>
+  dplyr::bind_cols(nat_contacts_summary) |>
   dplyr::relocate("data", .after = tidyselect::last_col()) |>
   dplyr::mutate(
     across("data", \(x) {
@@ -853,7 +877,4 @@ csds_nat_contacts_count <- csds_nat_contacts_count_init |>
 # COMMAND ----------
 
 # DBTITLE 1,write contacts dataset 2 to rds
-csds_nat_contacts_count |>
-  readr::write_rds(
-    "/Volumes/strategyunit/csds_fb/csds_patients/csds_nat_contacts_count.rds"
-  )
+db_write_rds(nat_contacts_final, "nat_contacts_final.rds") 
