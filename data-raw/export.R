@@ -5,15 +5,15 @@ read_db_dataset <- function(rds_file) {
   readr::read_rds(filename)
 }
 
-csds_nat_contacts <- read_db_dataset("csds_nat_contacts_count")
-csds_icb_contacts <- read_db_dataset("csds_icb_contacts_count")
-csds_nat_patients <- read_db_dataset("csds_nat_patients_count")
-csds_icb_patients <- read_db_dataset("csds_icb_patients_count")
+nat_contacts_data <- read_db_dataset("nat_contacts_final")
+icb_contacts_data <- read_db_dataset("icb_contacts_final")
+nat_patients_data <- read_db_dataset("nat_patients_final")
+icb_patients_data <- read_db_dataset("icb_patients_final")
 
 usethis::use_data(
-  csds_nat_contacts,
-  csds_icb_contacts,
-  csds_nat_patients,
-  csds_icb_patients,
+  nat_contacts_data,
+  icb_contacts_data,
+  nat_patients_data,
+  icb_patients_data,
   compress = "xz"
 )
