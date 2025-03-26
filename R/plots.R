@@ -86,7 +86,7 @@ plot_percent_change_by_age <- function(
     dplyr::filter(.data$fin_year %in% c("2022_23", horizon)) |>
     add_age_groups() |>
     dplyr::summarise(
-      value = sum(.data[["projected_contacts"]]),
+      value = sum(.data$projected_count),
       .by = c("type", "fin_year", "age_group_cat")
     ) |>
     tidyr::pivot_wider(
@@ -125,20 +125,20 @@ plot_count_per_population <- function(icb_data, measure) {
     dplyr::rename(fin_year_popn = "proj_popn_by_fy_age") |>
     add_age_groups() |>
     dplyr::summarise(
-      dplyr::across(c("fin_year_popn", "projected_contacts"), sum),
+      dplyr::across(c("fin_year_popn", "projected_count"), sum),
       .by = c("type", "age_group_cat")
     ) |>
     dplyr::mutate(
-      contacts_rate = .data[["projected_contacts"]] / .data[["fin_year_popn"]],
+      rate = .data[["projected_count"]] / .data[["fin_year_popn"]],
       .keep = "unused"
     ) |>
-    ggplot2::ggplot(ggplot2::aes(.data$age_group_cat, .data$contacts_rate)) +
+    ggplot2::ggplot(ggplot2::aes(.data$age_group_cat, .data$rate)) +
     ggplot2::geom_col(
       ggplot2::aes(fill = .data$type),
       position = "dodge",
       width = 0.75
     ) +
-    ggplot2::labs(x = "Age group", y = "Contacts / 1000 population") +
+    ggplot2::labs(x = "Age group", y = "Count / 1000 population") +
     ggplot2::scale_y_continuous(
       labels = scales::label_number(scale = 1e3, suffix = "k")
     ) +
@@ -158,7 +158,7 @@ plot_percent_change_by_service <- function(
     dplyr::mutate(dplyr::across("type", forcats::fct_inorder)) |>
     dplyr::filter(.data$fin_year %in% c("2022_23", horizon)) |>
     dplyr::summarise(
-      value = sum(.data[["projected_contacts"]]),
+      value = sum(.data[["projected_count"]]),
       .by = c("type", "fin_year", "team_type")
     ) |>
     tidyr::pivot_wider(
