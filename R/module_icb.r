@@ -95,7 +95,7 @@ icb_server <- function(id) {
       plot_percent_change_by_service(get_icb_data(), horizon = input$horizon)
     })
 
-    output$data_quality_summary_table <- shiny::renderDataTable({
+    output$data_quality_summary_table <- gt::render_gt({
       create_icb_dq_summary_table(get_icb_dq_data(), measure = input$measure)
     })
   })
