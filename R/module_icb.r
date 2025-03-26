@@ -84,15 +84,23 @@ icb_server <- function(id) {
     })
 
     output$percent_change_by_age <- shiny::renderPlot({
-      plot_percent_change_by_age(get_icb_data(), horizon = input$horizon)
+      plot_percent_change_by_age(
+        get_icb_data(),
+        measure = input$measure,
+        horizon = input$horizon
+      )
     })
 
     output$count_per_population <- shiny::renderPlot({
-      plot_count_per_population(get_icb_data())
+      plot_count_per_population(get_icb_data(), measure = input$measure)
     })
 
     output$percent_change_by_service <- shiny::renderPlot({
-      plot_percent_change_by_service(get_icb_data(), horizon = input$horizon)
+      plot_percent_change_by_service(
+        get_icb_data(),
+        measure = input$measure,
+        horizon = input$horizon
+      )
     })
 
     output$data_quality_summary_table <- gt::render_gt({
