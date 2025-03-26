@@ -69,12 +69,12 @@ create_patients_dq_table <- function(dat, icb = TRUE, label) {
     gt::opt_footnote_marks("standard")
 }
 
-create_icb_dq_summary_table < function(dat, measure) {
+create_icb_dq_summary_table <- function(dat, measure) {
   dat2 <- dplyr::select(dat, !tidyselect::starts_with("icb22"))
-  if (measure = "Contacts") {
+  if (measure == "Contacts") {
     create_contacts_dq_table(dat2, label = dat[["icb22nm"]])
   }
-  if (measure = "Patients") {
+  if (measure == "Patients") {
     create_patients_dq_table(dat2, label = dat[["icb22nm"]])
   }
 }
@@ -88,7 +88,6 @@ create_national_contacts_dq_table <- function() {
 
 create_icb_contacts_dq_table <- function(icb_data) {
   icb_data |>
-     |>
     create_contacts_dq_table(label = icb_data[["icb22nm"]])
 }
 
