@@ -6,25 +6,32 @@ tidy_icb_names <- function(dat) {
 }
 
 get_all_icb_data <- function(measure) {
-  if (measure == "Contacts") tidy_icb_names(csds_icb_contacts)
-  if (measure == "Patients") tidy_icb_names(csds_icb_patients)
+  switch(
+    measure,
+    Contacts = tidy_icb_names(icb_contacts_data),
+    Patients = tidy_icb_names(icb_patients_data)
+  )
 }
 get_all_national_data <- function(measure) {
-  if (measure == "Contacts") csds_nat_contacts
-  if (measure == "Patients") csds_nat_patients
+  switch(
+    measure,
+    Contacts = nat_contacts_data,
+    Patients = nat_patients_data
+  )
 }
 
 pull_unique <- \(dat, col) unique(dat[[col]])
 pluck_data <- \(dat) dat[["data"]][[1]]
 
 icb_list <- function() {
-  get_icb_contacts_data() |>
+  get_all_icb_data("Contacts") |>
     dplyr::select(c("icb22nm", "icb22cdh")) |>
     tibble::deframe()
 }
 
 year_list <- function() {
-  get_national_contacts_data() |>
+  get_all_national_data("Contacts") |>
+    pluck_data() |>
     pull_unique("fin_year") |>
     rlang::set_names(\(x) stringr::str_replace(x, "_", "/"))
 }
