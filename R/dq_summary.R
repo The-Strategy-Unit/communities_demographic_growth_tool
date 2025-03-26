@@ -25,7 +25,7 @@ create_contacts_dq_table <- function(dat, icb = TRUE, label) {
     ) |>
     dplyr::mutate(
       `%` = round(.data[["n"]] * 100 / .data[["n"]][[1]], 1),
-      across("n", round)
+      dplyr::across("n", round)
     ) |>
     gt::gt() |>
     gt::tab_header(glue::glue("CSDS Data Quality Summary - {label}")) |>
@@ -61,7 +61,7 @@ create_patients_dq_table <- function(dat, icb = TRUE, label) {
     ) |>
     dplyr::mutate(
       `%` = round(.data[["n"]] * 100 / .data[["n"]][[1]], 1),
-      across("n", round)
+      dplyr::across("n", round)
     ) |>
     gt::gt() |>
     gt::tab_header(glue::glue("CSDS Data Quality Summary - {label}")) |>

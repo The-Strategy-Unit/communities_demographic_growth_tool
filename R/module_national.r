@@ -10,7 +10,7 @@ national_ui <- function(id) {
       bslib::value_box(
         title = "Total contacts",
         value = format(
-          round(get_national_total_fy_count("contacts"), -5),
+          round(get_national_baseline_count("Contacts"), -5),
           big.mark = ","
         ),
         showcase = bsicons::bs_icon("bandaid-fill"),
@@ -19,7 +19,7 @@ national_ui <- function(id) {
       bslib::value_box(
         title = "Total contacts",
         value = format(
-          round(get_national_total_fy_count("contacts", fy = "2042_43"), -5),
+          round(get_national_horizon_count("Contacts"), -5),
           big.mark = ","
         ),
         showcase = bsicons::bs_icon("graph-up"),
@@ -27,14 +27,14 @@ national_ui <- function(id) {
       ),
       bslib::value_box(
         title = "Forecast increase",
-        value = paste0(get_national_pct_change_fy("contacts"), "%"),
+        value = paste0(get_national_pct_change("Contacts"), "%"),
         showcase = bsicons::bs_icon("arrow-up-right"),
         shiny::p("by 2042/43")
       ),
       bslib::value_box(
         title = "Total patients",
         value = format(
-          round(get_national_total_fy_count("patients"), -5),
+          round(get_national_baseline_count("Patients"), -5),
           big.mark = ","
         ),
         showcase = bsicons::bs_icon("people-fill"),
