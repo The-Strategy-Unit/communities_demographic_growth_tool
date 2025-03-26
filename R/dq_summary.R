@@ -71,34 +71,17 @@ create_patients_dq_table <- function(dat, icb = TRUE, label) {
 
 create_icb_dq_summary_table <- function(dat, measure) {
   dat2 <- dplyr::select(dat, !tidyselect::starts_with("icb22"))
-  if (measure == "Contacts") {
-    create_contacts_dq_table(dat2, label = dat[["icb22nm"]])
-  }
-  if (measure == "Patients") {
-    create_patients_dq_table(dat2, label = dat[["icb22nm"]])
-  }
+  switch(
+    measure,
+    Contacts = create_contacts_dq_table(dat2, label = dat[["icb22nm"]]),
+    Patients = create_patients_dq_table(dat2, label = dat[["icb22nm"]])
+  )
 }
 
-
-create_national_contacts_dq_table <- function() {
-  csds_nat_contacts |>
-    dplyr::select(!"national") |>
-    create_contacts_dq_table(FALSE, label = "National")
-}
-
-create_icb_contacts_dq_table <- function(icb_data) {
-  icb_data |>
-    create_contacts_dq_table(label = icb_data[["icb22nm"]])
-}
-
-create_national_patients_dq_table <- function() {
-  csds_nat_patients |>
-    dplyr::select(!"national") |>
-    create_patients_dq_table(FALSE, label = "National")
-}
-
-create_icb_patients_dq_table <- function(icb_data) {
-  icb_data |>
-    dplyr::select(!tidyselect::starts_with("icb22")) |>
-    create_patients_dq_table(label = icb_data[["icb22nm"]])
+create_national_dq_summary_table <- function(dat, measure) {
+  switch(
+    measure,
+    Contacts = create_contacts_dq_table(dat, label = "National"),
+    Patients = create_patients_dq_table(dat, label = "National")
+  )
 }
