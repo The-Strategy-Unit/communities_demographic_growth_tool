@@ -10,7 +10,7 @@ national_ui <- function(id) {
       bslib::value_box(
         title = "Total contacts",
         value = format(
-          round(get_national_total_fy_contacts(), -5),
+          round(get_national_baseline_count("Contacts"), -5),
           big.mark = ","
         ),
         showcase = bsicons::bs_icon("bandaid-fill"),
@@ -19,7 +19,7 @@ national_ui <- function(id) {
       bslib::value_box(
         title = "Total contacts",
         value = format(
-          round(get_national_total_fy_contacts(fin_year = "2042_43"), -5),
+          round(get_national_horizon_count("Contacts"), -5),
           big.mark = ","
         ),
         showcase = bsicons::bs_icon("graph-up"),
@@ -27,15 +27,18 @@ national_ui <- function(id) {
       ),
       bslib::value_box(
         title = "Forecast increase",
-        value = glue::glue("{get_national_pct_change_total_fy_contacts()}%"),
+        value = paste0(get_national_pct_change("Contacts"), "%"),
         showcase = bsicons::bs_icon("arrow-up-right"),
         shiny::p("by 2042/43")
       ),
       bslib::value_box(
         title = "Total patients",
-        value = 1400,
+        value = format(
+          round(get_national_baseline_count("Patients"), -5),
+          big.mark = ","
+        ),
         showcase = bsicons::bs_icon("people-fill"),
-        shiny::p("* placeholder figure")
+        shiny::p("in 2022/23")
       )
     ),
     bslib::layout_columns(
@@ -45,13 +48,18 @@ national_ui <- function(id) {
         full_screen = TRUE,
         bslib::nav_panel(
           title = "Contacts",
-          shiny::htmlOutput(ns("national_sentence")),
+          shiny::htmlOutput(ns("national_contacts_sentence")),
           shiny::plotOutput(ns("national_contacts_by_year"))
         ),
-        bslib::nav_panel(title = "Patients", shiny::p("Patients plot")),
+        bslib::nav_panel(
+          title = "Patients",
+          shiny::htmlOutput(ns("national_patients_sentence")),
+          shiny::plotOutput(ns("national_patients_by_year"))
+        ),
         bslib::nav_panel(
           title = "Data",
-          shiny::downloadButton("downloadData", "Download")
+          shiny::downloadButton("downloadData", "Download"),
+          gt::gt_output(ns("data_quality_summary_table"))
         )
       )
     )
@@ -63,12 +71,30 @@ national_ui <- function(id) {
 
 national_server <- function(id) {
   shiny::moduleServer(id, function(input, output, session) {
+    get_nat_dq_data <- shiny::reactive({
+      get_all_national_data(measure = "Contacts") |>
+        dplyr::select(!"data")
+    })
+
     output$national_contacts_by_year <- shiny::renderPlot({
       plot_national_contacts_by_year()
     })
 
-    output$national_sentence <- shiny::renderUI({
-      get_national_sentence()
+
+    output$national_patients_by_year <- shiny::renderPlot({
+      plot_national_patients_by_year()
+    })
+
+    output$national_contacts_sentence <- shiny::renderUI({
+      get_national_sentence("Contacts")
+    })
+
+    output$national_patients_sentence <- shiny::renderUI({
+      get_national_sentence("Patients")
+    })
+
+    output$data_quality_summary_table <- gt::render_gt({
+      create_nat_dq_summary_table(get_nat_dq_data(), measure = "Contacts")
     })
   })
 }

@@ -6,7 +6,7 @@
 \alias{CSDSDemographicGrowthApp-package}
 \title{CSDSDemographicGrowthApp: Exploring the impact of demographic growth on community services demand}
 \description{
-A shiny application to show the impact of demographic growth on community services using the CSDS dataset.
+A Shiny application to show the projected impact of demographic growth on community services, using the NHS England CSDS dataset.
 }
 \author{
 \strong{Maintainer}: Francis Barton \email{francis.barton@nhs.net}
