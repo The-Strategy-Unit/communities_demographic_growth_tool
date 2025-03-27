@@ -155,8 +155,8 @@ plot_count_per_population <- function(icb_data, measure) {
     dplyr::rename(fin_year_popn = "proj_popn_by_fy_age") |>
     prepare_plot_data(measure) |>
     dplyr::summarise(
-      across("fin_year_popn", unique),
-      across("projected_count", sum),
+      dplyr::across("fin_year_popn", unique),
+      dplyr::across("projected_count", sum),
       .by = c("type", "fin_year", "age_int")
     ) |>
     add_age_groups() |>
@@ -188,15 +188,24 @@ plot_percent_change_by_service <- function(
   measure,
   horizon = "2042_43"
 ) {
-  list(get_all_national_data(measure), icb_data[["data"]][[1]]) |>
+  list(get_all_national_data(measure), icb_data) |>
+    purrr::map(pluck_data) |>
     rlang::set_names(c("England", icb_data[["icb22nm"]])) |>
     dplyr::bind_rows(.id = "type") |>
-    dplyr::mutate(dplyr::across("type", forcats::fct_inorder)) |>
     dplyr::filter(.data$fin_year %in% c("2022_23", horizon)) |>
+    tidyr::unnest("data") |>
+    dplyr::mutate(
+      dplyr::across("type", forcats::fct_inorder),
+      dplyr::across("service", \(x) tidyr::replace_na(x, "Not recorded"))
+    ) |>
     dplyr::summarise(
       value = sum(.data[["projected_count"]]),
       .by = c("type", "fin_year", "service")
     ) |>
+    # Introduces NAs (which we can then use to remove services from the chart
+    # completely if any value (national or ICB, base or horizon) is missing).
+    tidyr::complete(.data$type, .data$fin_year, .data$service) |>
+    dplyr::filter(!any(is.na(.data$value)), .by = "service") |>
     tidyr::pivot_wider(
       id_cols = c("type", "service"),
       names_from = "fin_year",
@@ -207,6 +216,13 @@ plot_percent_change_by_service <- function(
         .data[["yr_2022_23"]]) /
         .data[["yr_2022_23"]],
       .keep = "unused"
+    ) |>
+    dplyr::mutate(
+      type_ind = dplyr::if_else(.data$type == "England", 1L, 0L),
+      pct_change_mod = .data$pct_change * .data$type_ind,
+      dplyr::across("service", \(x) {
+        forcats::fct_reorder(x, .data$pct_change_mod, .na_rm = FALSE)
+      }),
     ) |>
     ggplot2::ggplot(ggplot2::aes(.data$pct_change, .data$service)) +
     ggplot2::geom_col(
