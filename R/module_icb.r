@@ -36,7 +36,7 @@ icb_ui <- function(id) {
         full_screen = TRUE,
         bslib::nav_panel(
           title = "Totals by age",
-          shiny::plotOutput(ns("icb_contacts_by_year"))
+          shiny::plotOutput(ns("icb_measure_by_year"))
         ),
         bslib::nav_panel(
           title = "% change by age",

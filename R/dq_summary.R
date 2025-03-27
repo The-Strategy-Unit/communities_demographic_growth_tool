@@ -33,7 +33,7 @@ create_contacts_dq_table <- function(dat, icb = TRUE, label) {
       "This category also includes appointments with unknown status",
       gt::cells_body(1, row_cancelled)
     ) |>
-    # gt::fmt_number(columns = "n", decimals = 0) |>
+    gt::fmt_number(columns = "n", decimals = 0) |>
     gt::opt_footnote_marks("standard") |>
     gt::opt_table_font("Segoe UI", size = 18)
 }
@@ -65,7 +65,7 @@ create_patients_dq_table <- function(dat, icb = TRUE, label) {
     ) |>
     gt::gt() |>
     gt::tab_header(glue::glue("CSDS Data Quality Summary - {label}")) |>
-    # gt::fmt_number(columns = "n", decimals = 0) |>
+    gt::fmt_number(columns = "n", decimals = 0) |>
     gt::opt_footnote_marks("standard")
 }
 
@@ -78,7 +78,7 @@ create_icb_dq_summary_table <- function(dat, measure) {
   )
 }
 
-create_national_dq_summary_table <- function(dat, measure) {
+create_nat_dq_summary_table <- function(dat, measure) {
   switch(
     measure,
     Contacts = create_contacts_dq_table(dat, label = "National"),
