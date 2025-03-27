@@ -38,7 +38,7 @@ get_icb_sentence <- function(dat, horizon) {
   bas <- get_total_fy_count(dat, "2022_23")
   hrz <- get_total_fy_count(dat, horizon)
   percent_change <- round((hrz - bas) * 100 / bas, 1)
-  horizon <- stringr::str_replace(horizon, '_', '/')
+  horizon <- stringr::str_replace(horizon, "_", "/")
 
   glue::glue(
     "The total number of contacts for {dat$icb22nm} is {fmt(bas)}.<br /><br />
