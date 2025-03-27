@@ -146,12 +146,19 @@ plot_percent_change_by_age <- function(
 }
 
 plot_count_per_population <- function(icb_data, measure) {
-  list(get_all_national_data(measure), icb_data[["data"]][[1]]) |>
+  list(get_all_national_data(measure), icb_data) |>
     rlang::set_names(c("England", icb_data[["icb22nm"]])) |>
+    purrr::map(pluck_data) |>
     dplyr::bind_rows(.id = "type") |>
     dplyr::mutate(dplyr::across("type", forcats::fct_inorder)) |>
     dplyr::filter(dplyr::if_any("fin_year", \(x) x == "2022_23")) |>
     dplyr::rename(fin_year_popn = "proj_popn_by_fy_age") |>
+    prepare_plot_data(measure) |>
+    dplyr::summarise(
+      across("fin_year_popn", unique),
+      across("projected_count", sum),
+      .by = c("type", "fin_year", "age_int")
+    ) |>
     add_age_groups() |>
     dplyr::summarise(
       dplyr::across(c("fin_year_popn", "projected_count"), sum),
@@ -169,7 +176,7 @@ plot_count_per_population <- function(icb_data, measure) {
     ) +
     ggplot2::labs(x = "Age group", y = "Count / 1000 population") +
     ggplot2::scale_y_continuous(
-      labels = scales::label_number(scale = 1e3, suffix = "k")
+      labels = scales::label_number(scale = 1e3)
     ) +
     StrategyUnitTheme::scale_fill_su(name = NULL) +
     su_chart_theme()

@@ -48,7 +48,7 @@ icb_ui <- function(id) {
         ),
         bslib::nav_panel(
           title = "Utilisation",
-          shiny::plotOutput(ns("contacts_per_population"))
+          shiny::plotOutput(ns("count_per_population"))
         ),
         bslib::nav_panel(
           title = "Data"
