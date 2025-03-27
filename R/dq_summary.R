@@ -1,11 +1,11 @@
 create_contacts_dq_table <- function(dat, icb = TRUE, label) {
   category_names <- c(
-    "All contacts in intial dataset",
+    "All contacts in initial dataset",
     "Contacts not attributed to an ICB",
     "Contacts from inconsistent submitters",
     "Contacts where the patient did not attend",
     "Contacts where the appointment was cancelled",
-    "Contacts with missing patient age",
+    "Contacts with unknown patient age",
     "Contacts with unknown patient gender",
     "Total contacts excluded",
     "Remaining contacts included in projections"
@@ -44,7 +44,7 @@ create_patients_dq_table <- function(dat, icb = TRUE, label) {
     "Patients not attributed to an ICB",
     "Patients from inconsistent submitters",
     "Patients who did not attend any appointments",
-    "Patients with missing patient age",
+    "Patients with unknown patient age",
     "Patients with unknown patient gender",
     "Total patients excluded",
     "Remaining patients included in projections"
