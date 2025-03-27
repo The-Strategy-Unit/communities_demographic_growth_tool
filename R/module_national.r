@@ -48,7 +48,7 @@ national_ui <- function(id) {
         full_screen = TRUE,
         bslib::nav_panel(
           title = "Contacts",
-          lorem::ipsum(paragraphs = 2, sentences = 3),
+          shiny::htmlOutput(ns("national_sentence")),
           shiny::plotOutput(ns("national_contacts_by_year"))
         ),
         bslib::nav_panel(title = "Patients", shiny::p("Patients plot")),
@@ -73,6 +73,10 @@ national_server <- function(id) {
 
     output$national_contacts_by_year <- shiny::renderPlot({
       plot_national_contacts_by_year()
+    })
+
+    output$national_sentence <- shiny::renderUI({
+      get_national_sentence()
     })
 
     output$data_quality_summary_table <- gt::render_gt({
