@@ -1,25 +1,13 @@
-create_main_projection_chart <- function(.data, horizon) {
+create_main_projection_chart <- function(dat, horizon) {
   conv_lab <- \(x) {
     paste0(format(x, "%Y"), "/", (as.integer(format(x, "%Y")) + 1) %% 100)
   }
-  full_data <-
-    .data |>
-    dplyr::mutate(
-      dplyr::across("fin_year", \(x) as.Date(sub("_[0-9]{2}$", "-01-01", x)))
-    ) |>
-    add_broad_age_groups() |>
-    dplyr::summarise(
-      dplyr::across("projected_count", sum),
-      .by = c("fin_year", "broad_age_cat")
-    )
+  fy_as_date <- \(x) as.Date(sub("_[0-9]{2}$", "-01-01", x))
 
-  filtered_data <-
-    full_data |>
-    dplyr::filter(
-      .data$fin_year <= as.Date(sub("_[0-9]{2}$", "-01-01", horizon))
-    )
+  full_dat <- dplyr::mutate(dat, dplyr::across("fin_year", fy_as_date))
+  filtered_dat <- dplyr::filter(full_dat, .data$fin_year <= fy_as_date(horizon))
 
-  full_data |>
+  full_dat |>
     ggplot2::ggplot(ggplot2::aes(
       x = .data$fin_year,
       y = .data$projected_count,
@@ -27,12 +15,12 @@ create_main_projection_chart <- function(.data, horizon) {
     )) +
     ggplot2::geom_line(linewidth = 1, colour = "grey") +
     ggplot2::geom_line(
-      data = filtered_data,
+      data = filtered_dat,
       linewidth = 1,
       ggplot2::aes(colour = .data$broad_age_cat)
     ) +
     ggplot2::geom_point(
-      data = filtered_data,
+      data = filtered_dat,
       ggplot2::aes(colour = .data$broad_age_cat),
       size = 2
     ) +
@@ -59,20 +47,56 @@ create_main_projection_chart <- function(.data, horizon) {
 
 plot_national_contacts_by_year <- function(measure = "Contacts") {
   get_all_national_data(measure) |>
-    pluck_data() |>
+    prepare_main_plot_data(measure) |>
     create_main_projection_chart(horizon = "2042_43") |>
-    enhance_national_plot()
+    enhance_national_contacts_plot()
 }
-
-enhance_national_plot <- function(p) {
+enhance_national_contacts_plot <- function(p) {
   p
 }
 
-plot_icb_projected_count_by_year <- function(icb_data, horizon) {
+
+plot_national_patients_by_year <- function(measure = "Patients") {
+  get_all_national_data(measure) |>
+    prepare_main_plot_data(measure) |>
+    create_main_projection_chart(horizon = "2042_43") |>
+    enhance_national_patients_plot()
+}
+enhance_national_patients_plot <- function(p) {
+  p
+}
+
+plot_icb_projected_count_by_year <- function(icb_data, measure, horizon) {
   icb_data |>
-    pluck_data() |>
+    prepare_main_plot_data(measure) |>
     create_main_projection_chart(horizon = horizon)
 }
+
+prepare_main_plot_data <- function(dat, measure = c("Contacts", "Patients")) {
+  measure <- rlang::arg_match(measure)
+  if (measure == "Contacts") {
+    shaped_data <- dat |>
+      pluck_data() |>
+      tidyr::unnest("data")
+  } else {
+    shaped_data <- dat |>
+      pluck_data() |>
+      dplyr::select(!"data") |>
+      # Instead of adding up all the patient counts by service,
+      # which would double-count individuals who attended >1 service,
+      # we sum the pre-calculated number of unique patients for each year of
+      # age and financial year. We just need to re-label this for convenience.
+      dplyr::rename(projected_count = "proj_uniq_px_by_fy_age") |>
+      dplyr::distinct()
+  }
+  shaped_data |>
+    add_broad_age_groups() |>
+    dplyr::summarise(
+      dplyr::across("projected_count", sum),
+      .by = c("fin_year", "broad_age_cat")
+    )
+}
+
 
 plot_percent_change_by_age <- function(
   icb_data,
