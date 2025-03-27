@@ -80,7 +80,11 @@ icb_server <- function(id) {
     })
 
     output$icb_measure_by_year <- shiny::renderPlot({
-      plot_icb_measure_by_year(get_icb_data(), horizon = input$horizon)
+      plot_icb_measure_by_year(
+        get_icb_data(),
+        measure = input$measure,
+        horizon = input$horizon
+      )
     })
 
     output$percent_change_by_age <- shiny::renderPlot({
