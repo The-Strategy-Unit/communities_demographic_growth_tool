@@ -8,15 +8,15 @@ tidy_icb_names <- function(dat) {
 get_all_icb_data <- function(measure) {
   switch(
     measure,
-    Contacts = tidy_icb_names(icb_contacts_data),
-    Patients = tidy_icb_names(icb_patients_data)
+    Contacts = tidy_icb_names(CSDSDemographicGrowthApp::icb_contacts_data),
+    Patients = tidy_icb_names(CSDSDemographicGrowthApp::icb_patients_data)
   )
 }
 get_all_national_data <- function(measure) {
   switch(
     measure,
-    Contacts = nat_contacts_data,
-    Patients = nat_patients_data
+    Contacts = CSDSDemographicGrowthApp::nat_contacts_data,
+    Patients = CSDSDemographicGrowthApp::nat_patients_data
   )
 }
 
