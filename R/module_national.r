@@ -58,7 +58,8 @@ national_ui <- function(id) {
         ),
         bslib::nav_panel(
           title = "Data",
-          shiny::downloadButton("downloadData", "Download")
+          shiny::downloadButton("downloadData", "Download"),
+          gt::gt_output(ns("data_quality_summary_table"))
         )
       )
     )
