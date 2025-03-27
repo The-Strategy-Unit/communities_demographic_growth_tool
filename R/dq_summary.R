@@ -16,7 +16,6 @@ create_contacts_dq_table <- function(dat, icb = TRUE, label) {
     "appointment was cancelled"
   )
   dat |>
-    dplyr::select(!"data") |>
     dplyr::rename_with(\(x) category_names) |>
     tidyr::pivot_longer(
       cols = tidyselect::everything(),
@@ -52,7 +51,6 @@ create_patients_dq_table <- function(dat, icb = TRUE, label) {
   )
   if (icb) category_names <- category_names[-2]
   dat |>
-    dplyr::select(!"data") |>
     dplyr::rename_with(\(x) category_names) |>
     tidyr::pivot_longer(
       cols = tidyselect::everything(),
@@ -81,7 +79,7 @@ create_icb_dq_summary_table <- function(dat, measure) {
 create_nat_dq_summary_table <- function(dat, measure) {
   switch(
     measure,
-    Contacts = create_contacts_dq_table(dat, label = "National"),
-    Patients = create_patients_dq_table(dat, label = "National")
+    Contacts = create_contacts_dq_table(dat, FALSE, label = "National"),
+    Patients = create_patients_dq_table(dat, FALSE, label = "National")
   )
 }
