@@ -19,6 +19,7 @@ get_national_pct_change <- function(measure) {
   round((hrz - bas) * 100 / bas, 1)
 }
 
+
 get_national_sentence <- function(measure = c("Contacts", "Patients")) {
   fmt <- \(x) format(round(x, -3), big.mark = ",")
   bas <- get_national_baseline_count(measure)

@@ -80,6 +80,7 @@ national_server <- function(id) {
       plot_national_contacts_by_year()
     })
 
+
     output$national_patients_by_year <- shiny::renderPlot({
       plot_national_patients_by_year()
     })
