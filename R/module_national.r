@@ -48,10 +48,14 @@ national_ui <- function(id) {
         full_screen = TRUE,
         bslib::nav_panel(
           title = "Contacts",
-          shiny::htmlOutput(ns("national_sentence")),
+          shiny::htmlOutput(ns("national_contacts_sentence")),
           shiny::plotOutput(ns("national_contacts_by_year"))
         ),
-        bslib::nav_panel(title = "Patients", shiny::p("Patients plot")),
+        bslib::nav_panel(
+          title = "Patients",
+          shiny::htmlOutput(ns("national_patients_sentence")),
+          shiny::plotOutput(ns("national_patients_by_year"))
+        ),
         bslib::nav_panel(
           title = "Data",
           shiny::downloadButton("downloadData", "Download")
@@ -75,8 +79,16 @@ national_server <- function(id) {
       plot_national_contacts_by_year()
     })
 
-    output$national_sentence <- shiny::renderUI({
-      get_national_sentence()
+    output$national_patients_by_year <- shiny::renderPlot({
+      plot_national_patients_by_year()
+    })
+
+    output$national_contacts_sentence <- shiny::renderUI({
+      get_national_sentence("Contacts")
+    })
+
+    output$national_patients_sentence <- shiny::renderUI({
+      get_national_sentence("Patients")
     })
 
     output$data_quality_summary_table <- gt::render_gt({
