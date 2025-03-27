@@ -66,21 +66,30 @@ enhance_national_patients_plot <- function(p) {
   p
 }
 
-plot_icb_projected_count_by_year <- function(icb_data, measure, horizon) {
+plot_icb_measure_by_year <- function(icb_data, measure, horizon) {
   icb_data |>
     prepare_main_plot_data(measure) |>
     create_main_projection_chart(horizon = horizon)
 }
 
 prepare_main_plot_data <- function(dat, measure = c("Contacts", "Patients")) {
+  dat |>
+    pluck_data() |>
+    prepare_plot_data(rlang::arg_match(measure)) |>
+    add_broad_age_groups() |>
+    dplyr::summarise(
+      dplyr::across("projected_count", sum),
+      .by = c("fin_year", "broad_age_cat")
+    )
+}
+
+prepare_plot_data <- function(dat, measure = c("Contacts", "Patients")) {
   measure <- rlang::arg_match(measure)
   if (measure == "Contacts") {
-    shaped_data <- dat |>
-      pluck_data() |>
+    dat |>
       tidyr::unnest("data")
   } else {
-    shaped_data <- dat |>
-      pluck_data() |>
+    dat |>
       dplyr::select(!"data") |>
       # Instead of adding up all the patient counts by service,
       # which would double-count individuals who attended >1 service,
@@ -89,12 +98,6 @@ prepare_main_plot_data <- function(dat, measure = c("Contacts", "Patients")) {
       dplyr::rename(projected_count = "proj_uniq_px_by_fy_age") |>
       dplyr::distinct()
   }
-  shaped_data |>
-    add_broad_age_groups() |>
-    dplyr::summarise(
-      dplyr::across("projected_count", sum),
-      .by = c("fin_year", "broad_age_cat")
-    )
 }
 
 
@@ -103,11 +106,13 @@ plot_percent_change_by_age <- function(
   measure,
   horizon = "2042_43"
 ) {
-  list(get_all_national_data(measure), icb_data[["data"]][[1]]) |>
+  list(get_all_national_data(measure), icb_data) |>
+    purrr::map(pluck_data) |>
     rlang::set_names(c("England", icb_data[["icb22nm"]])) |>
     dplyr::bind_rows(.id = "type") |>
     dplyr::mutate(dplyr::across("type", forcats::fct_inorder)) |>
     dplyr::filter(.data$fin_year %in% c("2022_23", horizon)) |>
+    prepare_plot_data(measure) |>
     add_age_groups() |>
     dplyr::summarise(
       value = sum(.data$projected_count),
