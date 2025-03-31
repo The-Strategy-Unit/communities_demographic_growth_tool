@@ -190,6 +190,7 @@ plot_percent_change_by_age <- function(
   measure,
   horizon = "2042_43"
 ) {
+  dark_slate <- "#343739"
   list(get_all_national_data(measure), icb_data) |>
     purrr::map(pluck_data) |>
     rlang::set_names(c("England", icb_data[["icb22nm"]])) |>
@@ -219,13 +220,16 @@ plot_percent_change_by_age <- function(
       position = "dodge",
       width = 0.75
     ) +
-    ggplot2::geom_hline(yintercept = 0, linewidth = 0.4, colour = "#3e3f3a") +
-    ggplot2::labs(x = "Age group", y = "% change") +
+    ggplot2::geom_hline(yintercept = 0, linewidth = 0.4, colour = dark_slate) +
+    ggplot2::labs(x = "Age group", y = NULL) +
     ggplot2::scale_y_continuous(
       labels = scales::label_percent(suffix = ""),
       limits = c(-0.25, NA)
     ) +
-    StrategyUnitTheme::scale_fill_su(name = NULL) +
+    ggplot2::scale_fill_manual(
+      name = NULL,
+      values = duo_colours(icb_data[["icb22nm"]])
+    ) +
     su_chart_theme()
 }
 
@@ -262,7 +266,10 @@ plot_count_per_population <- function(icb_data, measure) {
     ggplot2::scale_y_continuous(
       labels = scales::label_number(scale = 1e3)
     ) +
-    StrategyUnitTheme::scale_fill_su(name = NULL) +
+    ggplot2::scale_fill_manual(
+      name = NULL,
+      values = duo_colours(icb_data[["icb22nm"]])
+    ) +
     su_chart_theme()
 }
 
@@ -272,6 +279,7 @@ plot_percent_change_by_service <- function(
   measure,
   horizon = "2042_43"
 ) {
+  dark_slate <- "#343739"
   list(get_all_national_data(measure), icb_data) |>
     purrr::map(pluck_data) |>
     rlang::set_names(c("England", icb_data[["icb22nm"]])) |>
@@ -314,9 +322,12 @@ plot_percent_change_by_service <- function(
       position = "dodge",
       width = 0.75
     ) +
-    ggplot2::geom_vline(xintercept = 0, linewidth = 0.4, colour = "#3e3f3a") +
-    ggplot2::labs(x = "% change", y = NULL) +
+    ggplot2::geom_vline(xintercept = 0, linewidth = 0.4, colour = dark_slate) +
+    ggplot2::labs(x = NULL, y = NULL) +
     ggplot2::scale_x_continuous(labels = scales::label_percent(suffix = "")) +
-    StrategyUnitTheme::scale_fill_su(name = NULL) +
+    ggplot2::scale_fill_manual(
+      name = NULL,
+      values = duo_colours(icb_data[["icb22nm"]])
+    ) +
     su_chart_theme()
 }
