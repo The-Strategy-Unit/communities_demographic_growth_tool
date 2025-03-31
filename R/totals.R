@@ -27,15 +27,16 @@ get_national_sentence <- function(measure = c("Contacts", "Patients")) {
   percent_change <- round((hrz - bas) * 100 / bas, 1)
 
   glue::glue(
-    "The total number of {tolower(measure)} for England is {fmt(bas)}.
+    "The total number of {tolower(measure)} for England in the CSDS for
+      2022/23 was {fmt(bas)}.
       <br /><br />
-      By the year 2042/43 this is predicted to rise to {fmt(hrz)},
+      By the year 2042/43 this is projected to rise to {fmt(hrz)},
       an increase of {percent_change}%."
   ) |>
     htmltools::HTML()
 }
 
-get_icb_sentence <- function(dat, horizon) {
+get_icb_sentence <- function(dat, measure, horizon) {
   fmt <- \(x) format(round(x, -3), big.mark = ",")
   bas <- get_total_fy_count(dat, "2022_23")
   hrz <- get_total_fy_count(dat, horizon)
@@ -43,8 +44,9 @@ get_icb_sentence <- function(dat, horizon) {
   horizon <- stringr::str_replace(horizon, "_", "/")
 
   glue::glue(
-    "The total number of contacts for {dat$icb22nm} is {fmt(bas)}.<br /><br />
-      By the year {horizon} this is predicted to rise to {fmt(hrz)},
+    "The total number of {tolower(measure)} for {dat$icb22nm} in the CSDS for
+      2022/23 was {fmt(bas)}.<br /><br />
+      By the year {horizon} this is projected to rise to {fmt(hrz)},
       an increase of {percent_change}%."
   ) |>
     htmltools::HTML()
