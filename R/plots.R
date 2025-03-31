@@ -1,11 +1,17 @@
 create_main_projection_chart <- function(dat, horizon) {
-  conv_lab <- \(x) {
+  convert_year_labels <- function(x) {
     paste0(format(x, "%Y"), "/", (as.integer(format(x, "%Y")) + 1) %% 100)
   }
-  fy_as_date <- \(x) as.Date(sub("_[0-9]{2}$", "-01-01", x))
+  fy_as_date <- \(x) as.Date(sub("_[0-9]{2}$", "-04-01", x))
 
   full_dat <- dplyr::mutate(dat, dplyr::across("fin_year", fy_as_date))
   filtered_dat <- dplyr::filter(full_dat, .data$fin_year <= fy_as_date(horizon))
+
+  label_fn <- if (max(full_dat$projected_count) < 1e6) {
+    scales::label_number(scale = 1e-3, suffix = "k")
+  } else {
+    scales::label_number(scale = 1e-6, suffix = "m")
+  }
 
   full_dat |>
     ggplot2::ggplot(ggplot2::aes(
@@ -16,31 +22,29 @@ create_main_projection_chart <- function(dat, horizon) {
     ggplot2::geom_line(linewidth = 1, colour = "grey") +
     ggplot2::geom_line(
       data = filtered_dat,
-      linewidth = 1,
-      ggplot2::aes(colour = .data$broad_age_cat)
+      ggplot2::aes(colour = .data$broad_age_cat),
+      linewidth = 1.8
     ) +
     ggplot2::geom_point(
       data = filtered_dat,
       ggplot2::aes(colour = .data$broad_age_cat),
-      size = 2
+      size = 2.7
     ) +
     ggplot2::labs(x = NULL, y = NULL) +
-    ggplot2::scale_y_continuous(
-      labels = scales::label_number(scale = 1e-6, suffix = "m")
-    ) +
+    ggplot2::scale_y_continuous(labels = label_fn) +
     ggplot2::scale_x_date(
-      breaks = seq.Date(as.Date("2022-01-01"), by = "5 years", length.out = 5),
+      breaks = seq.Date(as.Date("2022-04-01"), by = "5 years", length.out = 5),
       minor_breaks = seq.Date(
-        as.Date("2023-01-01"),
-        as.Date("2041-01-01"),
+        as.Date("2023-04-01"),
+        as.Date("2041-04-01"),
         "1 year"
       ),
-      labels = conv_lab,
-      guide = ggplot2::guide_axis(minor.ticks = TRUE)
+      labels = convert_year_labels
+      # guide = ggplot2::guide_axis(minor.ticks = TRUE)
     ) +
-    StrategyUnitTheme::scale_colour_su(
+    ggplot2::scale_colour_manual(
       name = "Age group",
-      guide = ggplot2::guide_legend(nrow = 1)
+      values = broad_age_group_colours()
     ) +
     su_chart_theme()
 }
