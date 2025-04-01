@@ -2,7 +2,6 @@ su_chart_theme <- function(font_family = "Segoe UI") {
   slate <- "#686f73"
   dark_slate <- "#343739"
   light_slate <- "#b2b7b9"
-  light_red <- "#f5b2aa"
   light_bg <- "#f5f4f3" # hardcoded, colour comes from  Shiny theme?
   ggplot2::theme(
     text = ggplot2::element_text(
