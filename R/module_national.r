@@ -91,7 +91,7 @@ national_ui <- function(id) {
         ),
         footer = bslib::card_body(
           fill = FALSE,
-          shiny::textOutput(ns("provider_note"))
+          shiny::includeText("inst/www/warning-note.txt")
         )
       )
     )
@@ -127,9 +127,5 @@ national_server <- function(id) {
     output$data_quality_summary_table <- gt::render_gt({
       create_nat_dq_summary_table(get_nat_dq_data(), measure = "Contacts")
     })
-
-    output$provider_note <- shiny::renderText(
-      "Please note, that not all providers of community care are included in baseline data. This reduced data set means that absolute volumes of community contacts are undercounted. However, percentage change values, although still based on the reduced data set, are found to be highly representative of England."
-    )
   })
 }

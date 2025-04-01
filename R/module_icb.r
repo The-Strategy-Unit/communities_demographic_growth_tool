@@ -53,6 +53,10 @@ icb_ui <- function(id) {
         bslib::nav_panel(
           title = "Data quality",
           gt::gt_output(ns("data_quality_summary_table"))
+        ),
+        footer = bslib::card_body(
+          fill = FALSE,
+          shiny::includeText("inst/www/warning-note.txt")
         )
       )
     )
