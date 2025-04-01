@@ -103,6 +103,7 @@ get_national_sentence <- function(measure = c("Contacts", "Patients")) {
     htmltools::HTML()
 }
 
+
 get_icb_sentence <- function(dat, measure, horizon) {
   fmt <- \(x) format(round(x, -3), big.mark = ",")
   bas <- get_total_fy_count(dat, "2022_23")
@@ -111,10 +112,15 @@ get_icb_sentence <- function(dat, measure, horizon) {
   horizon <- stringr::str_replace(horizon, "_", "/")
 
   glue::glue(
-    "<p>The total number of {tolower(measure)} for {dat$icb22nm} in the CSDS ",
-    "for 2022/23 was {fmt(bas)}.<br />",
-    "By the year {horizon} this is projected to rise to {fmt(hrz)}, an ",
-    "increase of {percent_change}%.</p>"
+    "<p> For <b>{dat$icb22nm}</b> the total <b>{tolower(measure)}</b> estimated by <b>{horizon}</b> due to demand from population growth is <b>{fmt(hrz)}</b>. This is an increase of <b>{percent_change}%</b> above the 2022/23 baseline of <b>{fmt(bas)}</b>. However, this increase is an all-age figure and the percentage change can differs noticeably between age groups.</p>
+
+<p>We can look at the percentage change by age for <b>{dat$icb22nm}</b> in more detail and compare it England. The age group with the largest percentage change in <b>{tolower(measure)}</b> by <b>{horizon}</b> is <b>00 - 00</b> with a difference of <b>X%</b>.</p>
+
+<p>We can also consider the breakdown by service. For <b>{dat$icb22nm}</b>, the service with the largest percentage change in <b>{tolower(measure)}</b> by <b>{horizon}</b> is <b>X service</b> with a difference of <b>X%</b>.</p>
+
+<p>The utilisation plot gives an idea of service usage across age groups. This is calculated by dividing the number of <b>{tolower(measure)}</b> by the population in the baseline year 2022/23. However, as we know the data in the baseline year is an under-estimate due to data quality issues, this graph will also underestimate the true utilisation of community services.</p>
+
+<p>Finally, data quality statistics are reported to demonstrate issues in data reporting. <b>{dat$icb22nm}</b> had <b>X%</b> of {tolower(measure)} excluded due to data quality issues.</p>"
   ) |>
     htmltools::HTML()
 }
