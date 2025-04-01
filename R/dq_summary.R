@@ -5,16 +5,15 @@ create_contacts_dq_table <- function(dat, icb = TRUE, label) {
     "Contacts from inconsistent submitters",
     "Contacts where the patient did not attend",
     "Contacts where the appointment was cancelled",
+    "Contacts where the appointment status is unknown",
     "Contacts with unknown patient age",
     "Contacts with unknown patient gender",
     "Total contacts excluded",
     "Remaining contacts included in projections"
   )
-  if (icb) category_names <- category_names[-2]
-  row_cancelled <- stringr::str_which(
-    category_names,
-    "appointment was cancelled"
-  )
+  icb_cat <- stringr::str_which(category_names, "ICB$")
+  if (icb) category_names <- category_names[-icb_cat]
+
   dat |>
     dplyr::rename_with(\(x) category_names) |>
     tidyr::pivot_longer(
@@ -28,10 +27,6 @@ create_contacts_dq_table <- function(dat, icb = TRUE, label) {
     ) |>
     gt::gt() |>
     gt::tab_header(glue::glue("CSDS Data Quality Summary - {label}")) |>
-    gt::tab_footnote(
-      "This category also includes appointments with unknown status",
-      gt::cells_body(1, row_cancelled)
-    ) |>
     gt::fmt_number(columns = "n", decimals = 0) |>
     gt::opt_footnote_marks("standard") |>
     gt::opt_table_font("Segoe UI", size = 18)
@@ -49,7 +44,8 @@ create_patients_dq_table <- function(dat, icb = TRUE, label) {
     "Total patients excluded",
     "Remaining patients included in projections"
   )
-  if (icb) category_names <- category_names[-2]
+  icb_cat <- stringr::str_which(category_names, "ICB$")
+  if (icb) category_names <- category_names[-icb_cat]
   dat |>
     dplyr::rename_with(\(x) category_names) |>
     tidyr::pivot_longer(
