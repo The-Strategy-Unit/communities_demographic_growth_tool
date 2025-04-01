@@ -233,6 +233,7 @@ plot_percent_change_by_age <- function(
 }
 
 plot_count_per_population <- function(icb_data, measure) {
+  y_lim <- if (measure == "Patients") 1 else NA
   list(get_all_national_data(measure), icb_data) |>
     rlang::set_names(c("England", icb_data[["icb22nm"]])) |>
     purrr::map(pluck_data) |>
@@ -261,14 +262,13 @@ plot_count_per_population <- function(icb_data, measure) {
       position = "dodge",
       width = 0.75
     ) +
-    ggplot2::labs(x = "Age group", y = "Count / 1000 population") +
-    ggplot2::scale_y_continuous(
-      labels = scales::label_number(scale = 1e3)
-    ) +
+    ggplot2::labs(x = "Age group", y = paste0(measure, " / 1000 population")) +
+    ggplot2::scale_y_continuous(labels = scales::label_number(scale = 1e3)) +
     ggplot2::scale_fill_manual(
       name = NULL,
       values = duo_colours(icb_data[["icb22nm"]])
     ) +
+    ggplot2::coord_cartesian(ylim = c(0, y_lim), expand = FALSE) +
     su_chart_theme()
 }
 
