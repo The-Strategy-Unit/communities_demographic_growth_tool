@@ -12,7 +12,6 @@ su_chart_theme <- function(font_family = "Segoe UI") {
     ),
     title = ggplot2::element_text(hjust = 0.05),
     plot.title = ggplot2::element_text(margin = ggplot2::margin(12)),
-    # plot.margin = ggplot2::margin(6, 24, 6, 6),
     legend.position = "bottom",
     legend.title.position = "left",
     legend.text.position = "bottom",

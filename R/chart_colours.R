@@ -19,7 +19,7 @@ age_group_colours <- function() {
     dark_charcoal = "#151412",
     blue = "#5881c1",
     light_orange = "#fcdf83",
-    red = "#ec6555",
+    red = "#ec6555"
   ) |>
     rlang::set_names(age_groups)
 }

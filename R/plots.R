@@ -40,7 +40,6 @@ create_main_projection_chart <- function(dat, horizon) {
         "1 year"
       ),
       labels = convert_year_labels
-      # guide = ggplot2::guide_axis(minor.ticks = TRUE)
     ) +
     ggplot2::scale_colour_manual(
       name = "Age group",
