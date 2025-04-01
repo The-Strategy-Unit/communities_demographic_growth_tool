@@ -1,4 +1,4 @@
-create_main_projection_chart <- function(dat, horizon) {
+create_main_projection_chart <- function(dat, measure, horizon) {
   convert_year_labels <- function(x) {
     paste0(format(x, "%Y"), "/", (as.integer(format(x, "%Y")) + 1) %% 100)
   }
@@ -30,7 +30,7 @@ create_main_projection_chart <- function(dat, horizon) {
       ggplot2::aes(colour = .data$broad_age_cat),
       size = 2.7
     ) +
-    ggplot2::labs(x = NULL, y = NULL) +
+    ggplot2::labs(x = NULL, y = measure) +
     ggplot2::scale_y_continuous(labels = label_fn) +
     ggplot2::scale_x_date(
       breaks = seq.Date(as.Date("2022-04-01"), by = "5 years", length.out = 5),
@@ -51,7 +51,7 @@ create_main_projection_chart <- function(dat, horizon) {
 plot_national_contacts_by_year <- function(measure = "Contacts") {
   get_all_national_data(measure) |>
     prepare_main_plot_data(measure) |>
-    create_main_projection_chart(horizon = "2042_43") |>
+    create_main_projection_chart(measure, horizon = "2042_43") |>
     enhance_national_contacts_plot()
 }
 enhance_national_contacts_plot <- function(p) {
@@ -142,7 +142,7 @@ enhance_national_contacts_plot <- function(p) {
 plot_national_patients_by_year <- function(measure = "Patients") {
   get_all_national_data(measure) |>
     prepare_main_plot_data(measure) |>
-    create_main_projection_chart(horizon = "2042_43") |>
+    create_main_projection_chart(measure, horizon = "2042_43") |>
     enhance_national_patients_plot()
 }
 enhance_national_patients_plot <- function(p) {
@@ -152,7 +152,7 @@ enhance_national_patients_plot <- function(p) {
 plot_icb_measure_by_year <- function(icb_data, measure, horizon) {
   icb_data |>
     prepare_main_plot_data(measure) |>
-    create_main_projection_chart(horizon = horizon)
+    create_main_projection_chart(measure, horizon = horizon)
 }
 
 prepare_main_plot_data <- function(dat, measure = c("Contacts", "Patients")) {
