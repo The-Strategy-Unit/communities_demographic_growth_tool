@@ -78,7 +78,7 @@ get_national_sentence_data <- function(measure = c("Contacts", "Patients")) {
 
 
 get_national_sentence <- function(measure = c("Contacts", "Patients")) {
-  fmt <- \(x) format(round(x, -3), big.mark = ",")
+  fmt <- \(x) round(x, -5) / 1e6 # nolint
   bas <- get_national_baseline_count(measure)
   hrz <- get_national_horizon_count(measure)
   percent_change <- round((hrz - bas) * 100 / bas, 1)
