@@ -76,7 +76,11 @@ icb_server <- function(id) {
     })
 
     output$icb_sentence <- shiny::renderUI({
-      get_icb_sentence(get_icb_data(), horizon = input$horizon)
+      get_icb_sentence(
+        get_icb_data(),
+        measure = input$measure,
+        horizon = input$horizon
+      )
     })
 
     output$icb_measure_by_year <- shiny::renderPlot({
