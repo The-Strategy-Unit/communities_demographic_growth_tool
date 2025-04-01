@@ -1,4 +1,4 @@
-create_main_projection_chart <- function(dat, horizon) {
+create_main_projection_chart <- function(dat, measure, horizon) {
   convert_year_labels <- function(x) {
     paste0(format(x, "%Y"), "/", (as.integer(format(x, "%Y")) + 1) %% 100)
   }
@@ -30,7 +30,7 @@ create_main_projection_chart <- function(dat, horizon) {
       ggplot2::aes(colour = .data$broad_age_cat),
       size = 2.7
     ) +
-    ggplot2::labs(x = NULL, y = NULL) +
+    ggplot2::labs(x = NULL, y = measure) +
     ggplot2::scale_y_continuous(labels = label_fn) +
     ggplot2::scale_x_date(
       breaks = seq.Date(as.Date("2022-04-01"), by = "5 years", length.out = 5),
@@ -51,7 +51,7 @@ create_main_projection_chart <- function(dat, horizon) {
 plot_national_contacts_by_year <- function(measure = "Contacts") {
   get_all_national_data(measure) |>
     prepare_main_plot_data(measure) |>
-    create_main_projection_chart(horizon = "2042_43") |>
+    create_main_projection_chart(measure, horizon = "2042_43") |>
     enhance_national_contacts_plot()
 }
 enhance_national_contacts_plot <- function(p) {
@@ -142,7 +142,7 @@ enhance_national_contacts_plot <- function(p) {
 plot_national_patients_by_year <- function(measure = "Patients") {
   get_all_national_data(measure) |>
     prepare_main_plot_data(measure) |>
-    create_main_projection_chart(horizon = "2042_43") |>
+    create_main_projection_chart(measure, horizon = "2042_43") |>
     enhance_national_patients_plot()
 }
 enhance_national_patients_plot <- function(p) {
@@ -152,7 +152,7 @@ enhance_national_patients_plot <- function(p) {
 plot_icb_measure_by_year <- function(icb_data, measure, horizon) {
   icb_data |>
     prepare_main_plot_data(measure) |>
-    create_main_projection_chart(horizon = horizon)
+    create_main_projection_chart(measure, horizon = horizon)
 }
 
 prepare_main_plot_data <- function(dat, measure = c("Contacts", "Patients")) {
@@ -220,7 +220,7 @@ plot_percent_change_by_age <- function(
       width = 0.75
     ) +
     ggplot2::geom_hline(yintercept = 0, linewidth = 0.4, colour = dark_slate) +
-    ggplot2::labs(x = "Age group", y = NULL) +
+    ggplot2::labs(x = "Age group", y = "% change") +
     ggplot2::scale_y_continuous(
       labels = scales::label_percent(suffix = ""),
       limits = c(-0.25, NA)
@@ -233,6 +233,7 @@ plot_percent_change_by_age <- function(
 }
 
 plot_count_per_population <- function(icb_data, measure) {
+  y_lim <- if (measure == "Patients") 1 else NA
   list(get_all_national_data(measure), icb_data) |>
     rlang::set_names(c("England", icb_data[["icb22nm"]])) |>
     purrr::map(pluck_data) |>
@@ -261,14 +262,13 @@ plot_count_per_population <- function(icb_data, measure) {
       position = "dodge",
       width = 0.75
     ) +
-    ggplot2::labs(x = "Age group", y = "Count / 1000 population") +
-    ggplot2::scale_y_continuous(
-      labels = scales::label_number(scale = 1e3)
-    ) +
+    ggplot2::labs(x = "Age group", y = paste0(measure, " / 1000 population")) +
+    ggplot2::scale_y_continuous(labels = scales::label_number(scale = 1e3)) +
     ggplot2::scale_fill_manual(
       name = NULL,
       values = duo_colours(icb_data[["icb22nm"]])
     ) +
+    ggplot2::coord_cartesian(ylim = c(0, y_lim), expand = FALSE) +
     su_chart_theme()
 }
 
@@ -287,7 +287,10 @@ plot_percent_change_by_service <- function(
     tidyr::unnest("data") |>
     dplyr::mutate(
       dplyr::across("type", forcats::fct_inorder),
-      dplyr::across("service", \(x) tidyr::replace_na(x, "Not recorded"))
+      dplyr::across("service", \(x) tidyr::replace_na(x, "Not recorded")),
+      dplyr::across("service", \(x) sub(" Service", "", x)),
+      dplyr::across("service", \(x) sub("Adult's", "Adults", x)),
+      dplyr::across("service", \(x) sub("Children's", "Children", x))
     ) |>
     dplyr::summarise(
       value = sum(.data[["projected_count"]]),
@@ -323,7 +326,7 @@ plot_percent_change_by_service <- function(
     ) +
     ggplot2::geom_vline(xintercept = 0, linewidth = 0.4, colour = dark_slate) +
     ggplot2::labs(x = NULL, y = NULL) +
-    ggplot2::scale_x_continuous(labels = scales::label_percent(suffix = "")) +
+    ggplot2::scale_x_continuous(labels = scales::label_percent(suffix = "%")) +
     ggplot2::scale_fill_manual(
       name = NULL,
       values = duo_colours(icb_data[["icb22nm"]])
