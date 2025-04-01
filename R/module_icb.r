@@ -51,7 +51,7 @@ icb_ui <- function(id) {
           shiny::plotOutput(ns("count_per_population"))
         ),
         bslib::nav_panel(
-          title = "Data"
+          title = "Data quality"
         )
       )
     )
