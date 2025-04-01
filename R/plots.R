@@ -61,8 +61,8 @@ enhance_national_contacts_plot <- function(p) {
   p +
     ggplot2::annotate(
       "label",
-      x = as.Date("2028-04-01"),
-      y = 1.95e7,
+      x = as.Date("2028-06-01"),
+      y = 1.93e7,
       label = stringr::str_wrap(
         paste0(
           "The older age groups, 65-84 and 85+, show dramatically increasing ",
@@ -78,25 +78,25 @@ enhance_national_contacts_plot <- function(p) {
     ) +
     ggplot2::annotate(
       "curve",
-      x = as.Date("2030-06-01"),
-      xend = as.Date("2031-10-01"),
-      y = 2.05e7,
+      x = as.Date("2031-06-01"),
+      xend = as.Date("2032-10-01"),
+      y = 2.03e7,
       yend = 2.5e7,
       colour = dark_red,
       curvature = 0.1
     ) +
     ggplot2::annotate(
       "curve",
-      x = as.Date("2030-06-01"),
-      xend = as.Date("2031-10-01"),
-      y = 1.85e7,
-      yend = 1.7e7,
+      x = as.Date("2031-06-01"),
+      xend = as.Date("2032-10-01"),
+      y = 1.83e7,
+      yend = 1.75e7,
       colour = dark_red,
       curvature = -0.1
     ) +
     ggplot2::annotate(
       "label",
-      x = as.Date("2036-12-01"),
+      x = as.Date("2037-10-01"),
       y = 9e6,
       label = stringr::str_wrap(
         paste0(
