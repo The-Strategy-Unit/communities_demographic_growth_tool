@@ -144,10 +144,12 @@ lad_proportion_by_icb <- lsoa11_icb22_lookup |>
   dplyr::mutate(lad_n = dplyr::n(), .by = "lad18cd") |>
   dplyr::mutate(icb_lad_n = dplyr::n(), .by = c("lad18cd", "icb22cdh")) |>
   dplyr::collect() |>
-  # Weighting LADs where they are split across >1 ICB (if completely contained in a single ICB then value will be 1).
-  # For example, if a LAD has 50% of its LSOAs within an ICB and 50% in another, this will create 2 rows for that LAD
-  # in the data, each with value 0.5. This split is therefore not a completely accurate split by population, but using
-  # number of LSOAs as an approximation to this.
+  # Weighting LADs where they are split across >1 ICB (if completely contained
+  # in a single ICB then value will be 1).
+  # For example, if a LAD has 50% of its LSOAs within an ICB and 50% in
+  # another, this will create 2 rows for that LAD in the data, each with value
+  # 0.5. This split is therefore not a completely accurate split by population,
+  # but using number of LSOAs as an approximation to this.
   dplyr::reframe(
     proportion = .data[["icb_lad_n"]] / .data[["lad_n"]],
     .by = c("icb22cdh", "lad18cd")
@@ -277,7 +279,11 @@ sparklyr::spark_write_parquet(
 
 # COMMAND ----------
 
-csds_data_tidy <- sparklyr::spark_read_parquet(sc, "csds_data_tidy", glue::glue("{db_vol}/csds_data_tidy"))
+csds_data_tidy <- sparklyr::spark_read_parquet(
+  sc,
+  "csds_data_tidy",
+  glue::glue("{db_vol}/csds_data_tidy")
+)
 
 # COMMAND ----------
 
@@ -683,7 +689,10 @@ icb_patients_count_init <- patients_count_init |>
 # COMMAND ----------
 
 icb_patients_count_init |>
-  sparklyr::spark_write_parquet(glue::glue("{db_vol}/icb_patients_count_init"), mode = "overwrite")
+  sparklyr::spark_write_parquet(
+    glue::glue("{db_vol}/icb_patients_count_init"),
+    mode = "overwrite"
+  )
 
 # COMMAND ----------
 
@@ -728,7 +737,7 @@ db_write_rds(nat_unique_patients_summary, "nat_unique_patients_summary.rds")
 
 # COMMAND ----------
 
-popn_fy_projected <- db_read_rds("popn_fy_projected.rds") 
+popn_fy_projected <- db_read_rds("popn_fy_projected.rds")
 icb_popn_fy_projected <- db_read_rds("icb_popn_fy_projected.rds")
 nat_popn_fy_projected <- db_read_rds("nat_popn_fy_projected.rds")
 nat_patients_summary <- db_read_rds("nat_patients_summary.rds")
@@ -812,7 +821,7 @@ db_write_rds(nat_patients_final, "nat_patients_final.rds")
 
 # COMMAND ----------
 
-popn_fy_projected <- db_read_rds("popn_fy_projected.rds") 
+popn_fy_projected <- db_read_rds("popn_fy_projected.rds")
 icb_popn_fy_projected <- db_read_rds("icb_popn_fy_projected.rds")
 nat_popn_fy_projected <- db_read_rds("nat_popn_fy_projected.rds")
 nat_contacts_summary <- db_read_rds("nat_contacts_summary.rds")
@@ -890,4 +899,4 @@ nat_contacts_final <- icb_contacts_count |>
 # COMMAND ----------
 
 # DBTITLE 1,write contacts dataset 2 to rds
-db_write_rds(nat_contacts_final, "nat_contacts_final.rds") 
+db_write_rds(nat_contacts_final, "nat_contacts_final.rds")
