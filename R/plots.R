@@ -1,11 +1,17 @@
 create_main_projection_chart <- function(dat, horizon) {
-  conv_lab <- \(x) {
+  convert_year_labels <- function(x) {
     paste0(format(x, "%Y"), "/", (as.integer(format(x, "%Y")) + 1) %% 100)
   }
-  fy_as_date <- \(x) as.Date(sub("_[0-9]{2}$", "-01-01", x))
+  fy_as_date <- \(x) as.Date(sub("_[0-9]{2}$", "-04-01", x))
 
   full_dat <- dplyr::mutate(dat, dplyr::across("fin_year", fy_as_date))
   filtered_dat <- dplyr::filter(full_dat, .data$fin_year <= fy_as_date(horizon))
+
+  label_fn <- if (max(full_dat$projected_count) < 1e6) {
+    scales::label_number(scale = 1e-3, suffix = "k")
+  } else {
+    scales::label_number(scale = 1e-6, suffix = "m")
+  }
 
   full_dat |>
     ggplot2::ggplot(ggplot2::aes(
@@ -16,31 +22,28 @@ create_main_projection_chart <- function(dat, horizon) {
     ggplot2::geom_line(linewidth = 1, colour = "grey") +
     ggplot2::geom_line(
       data = filtered_dat,
-      linewidth = 1,
-      ggplot2::aes(colour = .data$broad_age_cat)
+      ggplot2::aes(colour = .data$broad_age_cat),
+      linewidth = 1.8
     ) +
     ggplot2::geom_point(
       data = filtered_dat,
       ggplot2::aes(colour = .data$broad_age_cat),
-      size = 2
+      size = 2.7
     ) +
     ggplot2::labs(x = NULL, y = NULL) +
-    ggplot2::scale_y_continuous(
-      labels = scales::label_number(scale = 1e-6, suffix = "m")
-    ) +
+    ggplot2::scale_y_continuous(labels = label_fn) +
     ggplot2::scale_x_date(
-      breaks = seq.Date(as.Date("2022-01-01"), by = "5 years", length.out = 5),
+      breaks = seq.Date(as.Date("2022-04-01"), by = "5 years", length.out = 5),
       minor_breaks = seq.Date(
-        as.Date("2023-01-01"),
-        as.Date("2041-01-01"),
+        as.Date("2023-04-01"),
+        as.Date("2041-04-01"),
         "1 year"
       ),
-      labels = conv_lab,
-      guide = ggplot2::guide_axis(minor.ticks = TRUE)
+      labels = convert_year_labels
     ) +
-    StrategyUnitTheme::scale_colour_su(
+    ggplot2::scale_colour_manual(
       name = "Age group",
-      guide = ggplot2::guide_legend(nrow = 1)
+      values = broad_age_group_colours()
     ) +
     su_chart_theme()
 }
@@ -52,7 +55,87 @@ plot_national_contacts_by_year <- function(measure = "Contacts") {
     enhance_national_contacts_plot()
 }
 enhance_national_contacts_plot <- function(p) {
-  p
+  charcoal <- "#2c2825"
+  dark_red <- "#901d10"
+  p +
+    ggplot2::annotate(
+      "label",
+      x = as.Date("2028-06-01"),
+      y = 1.93e7,
+      label = stringr::str_wrap(
+        paste0(
+          "The older age groups, 65-84 and 85+, show increasing ",
+          "projected growth in contacts with community services, to a ",
+          "combined total of more than 50m contacts in 2042/43..."
+        ),
+        50
+      ),
+      colour = dark_red,
+      size = 5,
+      label.size = 0.6,
+      label.padding = ggplot2::unit(3, "mm")
+    ) +
+    ggplot2::annotate(
+      "curve",
+      x = as.Date("2030-08-01"),
+      xend = as.Date("2032-10-01"),
+      y = 2.03e7,
+      yend = 2.5e7,
+      colour = dark_red,
+      curvature = 0.1
+    ) +
+    ggplot2::annotate(
+      "curve",
+      x = as.Date("2030-08-01"),
+      xend = as.Date("2032-10-01"),
+      y = 1.83e7,
+      yend = 1.75e7,
+      colour = dark_red,
+      curvature = -0.1
+    ) +
+    ggplot2::annotate(
+      "label",
+      x = as.Date("2036-12-01"),
+      y = 9e6,
+      label = stringr::str_wrap(
+        paste0(
+          "... whereas the projected change in contacts within the 0-4, 5-17 ",
+          "and 18-64 age groups is roughly level over the period"
+        ),
+        44
+      ),
+      colour = charcoal,
+      size = 5,
+      label.size = 0.6,
+      label.padding = ggplot2::unit(3, "mm")
+    ) +
+    ggplot2::annotate(
+      "curve",
+      x = as.Date("2035-01-01"),
+      xend = as.Date("2033-10-01"),
+      y = 9.1e6,
+      yend = 1.15e7,
+      colour = charcoal,
+      curvature = -0.1
+    ) +
+    ggplot2::annotate(
+      "curve",
+      x = as.Date("2035-01-01"),
+      xend = as.Date("2033-10-01"),
+      y = 8.9e6,
+      yend = 6.6e6,
+      colour = charcoal,
+      curvature = 0.1
+    ) +
+    ggplot2::annotate(
+      "curve",
+      x = as.Date("2035-01-01"),
+      xend = as.Date("2033-10-01"),
+      y = 8.7e6,
+      yend = 4e6,
+      colour = charcoal,
+      curvature = 0.1
+    )
 }
 
 
@@ -106,6 +189,7 @@ plot_percent_change_by_age <- function(
   measure,
   horizon = "2042_43"
 ) {
+  dark_slate <- "#343739"
   list(get_all_national_data(measure), icb_data) |>
     purrr::map(pluck_data) |>
     rlang::set_names(c("England", icb_data[["icb22nm"]])) |>
@@ -135,13 +219,16 @@ plot_percent_change_by_age <- function(
       position = "dodge",
       width = 0.75
     ) +
-    ggplot2::geom_hline(yintercept = 0, linewidth = 0.4, colour = "#3e3f3a") +
-    ggplot2::labs(x = "Age group", y = "% change") +
+    ggplot2::geom_hline(yintercept = 0, linewidth = 0.4, colour = dark_slate) +
+    ggplot2::labs(x = "Age group", y = NULL) +
     ggplot2::scale_y_continuous(
       labels = scales::label_percent(suffix = ""),
       limits = c(-0.25, NA)
     ) +
-    StrategyUnitTheme::scale_fill_su(name = NULL) +
+    ggplot2::scale_fill_manual(
+      name = NULL,
+      values = duo_colours(icb_data[["icb22nm"]])
+    ) +
     su_chart_theme()
 }
 
@@ -178,7 +265,10 @@ plot_count_per_population <- function(icb_data, measure) {
     ggplot2::scale_y_continuous(
       labels = scales::label_number(scale = 1e3)
     ) +
-    StrategyUnitTheme::scale_fill_su(name = NULL) +
+    ggplot2::scale_fill_manual(
+      name = NULL,
+      values = duo_colours(icb_data[["icb22nm"]])
+    ) +
     su_chart_theme()
 }
 
@@ -188,6 +278,7 @@ plot_percent_change_by_service <- function(
   measure,
   horizon = "2042_43"
 ) {
+  dark_slate <- "#343739"
   list(get_all_national_data(measure), icb_data) |>
     purrr::map(pluck_data) |>
     rlang::set_names(c("England", icb_data[["icb22nm"]])) |>
@@ -230,9 +321,12 @@ plot_percent_change_by_service <- function(
       position = "dodge",
       width = 0.75
     ) +
-    ggplot2::geom_vline(xintercept = 0, linewidth = 0.4, colour = "#3e3f3a") +
-    ggplot2::labs(x = "% change", y = NULL) +
+    ggplot2::geom_vline(xintercept = 0, linewidth = 0.4, colour = dark_slate) +
+    ggplot2::labs(x = NULL, y = NULL) +
     ggplot2::scale_x_continuous(labels = scales::label_percent(suffix = "")) +
-    StrategyUnitTheme::scale_fill_su(name = NULL) +
+    ggplot2::scale_fill_manual(
+      name = NULL,
+      values = duo_colours(icb_data[["icb22nm"]])
+    ) +
     su_chart_theme()
 }
