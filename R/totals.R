@@ -67,6 +67,9 @@ get_national_sentence_data <- function(measure = c("Contacts", "Patients")) {
   horizon_age_group_props <- horizon_age_group_counts / all_horizon
 
   list(
+    baseline_counts = baseline_age_group_counts,
+    midpoint_counts = midpoint_age_group_counts,
+    horizon_counts = horizon_age_group_counts,
     baseline_props = baseline_age_group_props,
     midpoint_props = midpoint_age_group_props,
     horizon_props = horizon_age_group_props
@@ -81,11 +84,21 @@ get_national_sentence <- function(measure = c("Contacts", "Patients")) {
   percent_change <- round((hrz - bas) * 100 / bas, 1)
 
   glue::glue_data(
-    # fmt: skip
     get_national_sentence_data(measure),
-    "The total number of {tolower(measure)} for England in the CSDS for 2022/23 was {fmt(bas)}.<br />
-      By the year 2042/43 this is projected to rise to {fmt(hrz)}, an increase of {percent_change}%.<br /><br />
-      {measure} within the two older age groups, 65-84 and 85+, together accounted for {round(sum(baseline_props[4:5]) * 100, 1)}% of all community services {tolower(measure)} in 2022/23, projected to rise to {round(sum(midpoint_props[4:5]) * 100, 1)}% in 2032/33 and further to {round(sum(horizon_props[4:5]) * 100, 1)}% by 2042/43."
+    "<p>The total number of {tolower(measure)} for England in the CSDS for ",
+    "2022/23 was {fmt(bas)}m.<br />",
+    "By the year 2042/43 this is projected to rise to {fmt(hrz)}m, an ",
+    "increase of {percent_change}%.</p>",
+    "<p>{measure} within the two older age groups, ",
+    "<span style='color: #5881c1;'><strong>65-84</strong></span> and ",
+    "<span style='color: #ec6555;'><strong>85+</strong></span>, together ",
+    "accounted for {round(sum(baseline_counts[4:5]), -5) / 1e6}m community ",
+    "services {tolower(measure)} ({round(sum(baseline_props[4:5]) * 100, 1)}% ",
+    "of all {tolower(measure)}) in 2022/23, projected to rise to ",
+    "{round(sum(midpoint_counts[4:5]), -5) / 1e6}m ",
+    "({round(sum(midpoint_props[4:5]) * 100, 1)}% of total) in 2032/33 and ",
+    "further to {round(sum(horizon_counts[4:5]), -5) / 1e6}m ",
+    "({round(sum(horizon_props[4:5]) * 100, 1)}% of total) by 2042/43.</p>"
   ) |>
     htmltools::HTML()
 }
