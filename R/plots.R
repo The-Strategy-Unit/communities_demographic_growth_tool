@@ -287,7 +287,9 @@ plot_percent_change_by_service <- function(
     tidyr::unnest("data") |>
     dplyr::mutate(
       dplyr::across("type", forcats::fct_inorder),
-      dplyr::across("service", \(x) tidyr::replace_na(x, "Not recorded"))
+      dplyr::across("service", \(x) tidyr::replace_na(x, "Not recorded")),
+      dplyr::across("service", \(x) sub(" Service", "", x)),
+      dplyr::across("service", \(x) sub("Adult's", "Adults", x))
     ) |>
     dplyr::summarise(
       value = sum(.data[["projected_count"]]),
