@@ -111,10 +111,10 @@ get_icb_sentence <- function(dat, measure, horizon) {
   horizon <- stringr::str_replace(horizon, "_", "/")
 
   glue::glue(
-    "The total number of {tolower(measure)} for {dat$icb22nm} in the CSDS for
-      2022/23 was {fmt(bas)}.<br /><br />
-      By the year {horizon} this is projected to rise to {fmt(hrz)},
-      an increase of {percent_change}%."
+    "<p>The total number of {tolower(measure)} for {dat$icb22nm} in the CSDS ",
+    "for 2022/23 was {fmt(bas)}.<br />",
+    "By the year {horizon} this is projected to rise to {fmt(hrz)}, an ",
+    "increase of {percent_change}%.</p>"
   ) |>
     htmltools::HTML()
 }
