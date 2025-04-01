@@ -11,7 +11,6 @@ su_chart_theme <- function(font_family = "Segoe UI") {
       colour = dark_slate
     ),
     title = ggplot2::element_text(hjust = 0.05),
-    plot.title = ggplot2::element_text(margin = ggplot2::margin(12)),
     legend.position = "bottom",
     legend.title.position = "left",
     legend.text.position = "bottom",
@@ -26,7 +25,7 @@ su_chart_theme <- function(font_family = "Segoe UI") {
     ),
     panel.grid.major.x = ggplot2::element_blank(),
     panel.grid.minor.y = ggplot2::element_line(
-      colour = light_red,
+      colour = light_slate,
       linewidth = 0.2
     ),
     panel.grid.minor.x = ggplot2::element_blank(),
