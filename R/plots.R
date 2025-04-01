@@ -220,7 +220,7 @@ plot_percent_change_by_age <- function(
       width = 0.75
     ) +
     ggplot2::geom_hline(yintercept = 0, linewidth = 0.4, colour = dark_slate) +
-    ggplot2::labs(x = "Age group", y = NULL) +
+    ggplot2::labs(x = "Age group", y = "% change") +
     ggplot2::scale_y_continuous(
       labels = scales::label_percent(suffix = ""),
       limits = c(-0.25, NA)
@@ -289,7 +289,8 @@ plot_percent_change_by_service <- function(
       dplyr::across("type", forcats::fct_inorder),
       dplyr::across("service", \(x) tidyr::replace_na(x, "Not recorded")),
       dplyr::across("service", \(x) sub(" Service", "", x)),
-      dplyr::across("service", \(x) sub("Adult's", "Adults", x))
+      dplyr::across("service", \(x) sub("Adult's", "Adults", x)),
+      dplyr::across("service", \(x) sub("Children's", "Children", x))
     ) |>
     dplyr::summarise(
       value = sum(.data[["projected_count"]]),
@@ -325,7 +326,7 @@ plot_percent_change_by_service <- function(
     ) +
     ggplot2::geom_vline(xintercept = 0, linewidth = 0.4, colour = dark_slate) +
     ggplot2::labs(x = NULL, y = NULL) +
-    ggplot2::scale_x_continuous(labels = scales::label_percent(suffix = "")) +
+    ggplot2::scale_x_continuous(labels = scales::label_percent(suffix = "%")) +
     ggplot2::scale_fill_manual(
       name = NULL,
       values = duo_colours(icb_data[["icb22nm"]])
