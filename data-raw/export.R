@@ -15,5 +15,6 @@ usethis::use_data(
   icb_contacts_data,
   nat_patients_data,
   icb_patients_data,
-  compress = "xz"
+  compress = "xz",
+  overwrite = TRUE
 )
