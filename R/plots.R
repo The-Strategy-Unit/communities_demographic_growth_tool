@@ -343,6 +343,81 @@ plot_contacts_per_patient <- function(icb) {
       name = NULL,
       values = duo_colours(icb_name)
     ) +
+    ggplot2::coord_cartesian(ylim = c(0, y_lim)) +
+    su_chart_theme()
+}
+
+
+plot_contacts_per_patient <- function(icb) {
+  icb_name <- get_all_icb_data("Contacts") |>
+    dplyr::filter(.data$icb22cdh == {{ icb }}) |>
+    dplyr::pull("icb22nm")
+  sum_cols <- c("proj_popn_by_fy_age", "fin_year", "age_int")
+
+  icb_contacts_data <- get_all_icb_data("Contacts") |>
+    dplyr::filter(.data$icb22cdh == {{ icb }}) |>
+    pluck_data() |>
+    prepare_plot_data("Contacts") |>
+    dplyr::summarise(
+      dplyr::across("projected_count", sum),
+      .by = tidyselect::all_of(sum_cols)
+    )
+  icb_patients_data <- get_all_icb_data("Patients") |>
+    dplyr::filter(.data$icb22cdh == {{ icb }}) |>
+    pluck_data() |>
+    prepare_plot_data("Patients")
+
+  icb_data <- list(
+    contacts = icb_contacts_data,
+    patients = icb_patients_data
+  ) |>
+    dplyr::bind_rows(.id = "dataset")
+
+  nat_contacts_data <- get_all_national_data("Contacts") |>
+    pluck_data() |>
+    prepare_plot_data("Contacts") |>
+    dplyr::summarise(
+      dplyr::across("projected_count", sum),
+      .by = tidyselect::all_of(sum_cols)
+    )
+  nat_patients_data <- get_all_national_data("Patients") |>
+    pluck_data() |>
+    prepare_plot_data("Patients")
+
+  nat_data <- list(
+    contacts = nat_contacts_data,
+    patients = nat_patients_data
+  ) |>
+    dplyr::bind_rows(.id = "dataset")
+
+  list(nat_data, icb_data) |>
+    rlang::set_names(c("England", icb_name)) |>
+    dplyr::bind_rows(.id = "type") |>
+    dplyr::mutate(dplyr::across("type", forcats::fct_inorder)) |>
+    dplyr::filter(dplyr::if_any("fin_year", \(x) x == "2022_23")) |>
+    add_age_groups() |>
+    dplyr::summarise(
+      dplyr::across("projected_count", sum),
+      .by = c("type", "dataset", "age_group_cat")
+    ) |>
+    dplyr::rename(count = "projected_count") |>
+    tidyr::pivot_wider(values_from = "count", names_from = "dataset") |>
+    dplyr::mutate(
+      rate = .data[["contacts"]] / .data[["patients"]],
+      .keep = "unused"
+    ) |>
+    ggplot2::ggplot(ggplot2::aes(.data$age_group_cat, .data$rate)) +
+    ggplot2::geom_col(
+      ggplot2::aes(fill = .data$type),
+      position = "dodge",
+      width = 0.75
+    ) +
+    ggplot2::labs(x = "Age group", y = "Contacts / 1000 patients") +
+    ggplot2::scale_y_continuous(labels = scales::label_number(scale = 1e3)) +
+    ggplot2::scale_fill_manual(
+      name = NULL,
+      values = duo_colours(icb_name)
+    ) +
     su_chart_theme()
 }
 
