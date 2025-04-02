@@ -8,3 +8,4 @@
 ^\.github$
 ^.lintr$
 ^_brand.yml$
+^rsconnect/
