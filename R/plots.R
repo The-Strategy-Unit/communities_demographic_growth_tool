@@ -145,7 +145,6 @@ plot_percent_change_by_age <- function(
 }
 
 plot_count_per_population <- function(icb_data, measure) {
-  y_lim <- if (measure == "Patients") 1 else NA
   list(get_all_national_data(measure), icb_data) |>
     rlang::set_names(c("England", icb_data[["icb22nm"]])) |>
     purrr::map(pluck_data) |>
@@ -180,7 +179,6 @@ plot_count_per_population <- function(icb_data, measure) {
       name = NULL,
       values = duo_colours(icb_data[["icb22nm"]])
     ) +
-    ggplot2::coord_cartesian(ylim = c(0, y_lim)) +
     su_chart_theme()
 }
 
