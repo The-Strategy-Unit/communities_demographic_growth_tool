@@ -51,102 +51,14 @@ create_main_projection_chart <- function(dat, measure, horizon) {
 plot_national_contacts_by_year <- function(measure = "Contacts") {
   get_all_national_data(measure) |>
     prepare_main_plot_data(measure) |>
-    create_main_projection_chart(measure, horizon = "2042_43") |>
-    enhance_national_contacts_plot()
-}
-enhance_national_contacts_plot <- function(p) {
-  charcoal <- "#2c2825"
-  dark_red <- "#901d10"
-  p +
-    ggplot2::annotate(
-      "label",
-      x = as.Date("2028-06-01"),
-      y = 1.93e7,
-      label = stringr::str_wrap(
-        paste0(
-          "The older age groups, 65-84 and 85+, show increasing ",
-          "projected growth in contacts with community services, to a ",
-          "combined total of more than 50m contacts in 2042/43..."
-        ),
-        50
-      ),
-      colour = dark_red,
-      size = 5,
-      label.size = 0.6,
-      label.padding = ggplot2::unit(3, "mm")
-    ) +
-    ggplot2::annotate(
-      "curve",
-      x = as.Date("2030-08-01"),
-      xend = as.Date("2032-10-01"),
-      y = 2.03e7,
-      yend = 2.5e7,
-      colour = dark_red,
-      curvature = 0.1
-    ) +
-    ggplot2::annotate(
-      "curve",
-      x = as.Date("2030-08-01"),
-      xend = as.Date("2032-10-01"),
-      y = 1.83e7,
-      yend = 1.75e7,
-      colour = dark_red,
-      curvature = -0.1
-    ) +
-    ggplot2::annotate(
-      "label",
-      x = as.Date("2036-12-01"),
-      y = 9e6,
-      label = stringr::str_wrap(
-        paste0(
-          "... whereas the projected change in contacts within the 0-4, 5-17 ",
-          "and 18-64 age groups is roughly level over the period"
-        ),
-        44
-      ),
-      colour = charcoal,
-      size = 5,
-      label.size = 0.6,
-      label.padding = ggplot2::unit(3, "mm")
-    ) +
-    ggplot2::annotate(
-      "curve",
-      x = as.Date("2035-01-01"),
-      xend = as.Date("2033-10-01"),
-      y = 9.1e6,
-      yend = 1.15e7,
-      colour = charcoal,
-      curvature = -0.1
-    ) +
-    ggplot2::annotate(
-      "curve",
-      x = as.Date("2035-01-01"),
-      xend = as.Date("2033-10-01"),
-      y = 8.9e6,
-      yend = 6.6e6,
-      colour = charcoal,
-      curvature = 0.1
-    ) +
-    ggplot2::annotate(
-      "curve",
-      x = as.Date("2035-01-01"),
-      xend = as.Date("2033-10-01"),
-      y = 8.7e6,
-      yend = 4e6,
-      colour = charcoal,
-      curvature = 0.1
-    )
+    create_main_projection_chart(measure, horizon = "2042_43")
 }
 
 
 plot_national_patients_by_year <- function(measure = "Patients") {
   get_all_national_data(measure) |>
     prepare_main_plot_data(measure) |>
-    create_main_projection_chart(measure, horizon = "2042_43") |>
-    enhance_national_patients_plot()
-}
-enhance_national_patients_plot <- function(p) {
-  p
+    create_main_projection_chart(measure, horizon = "2042_43")
 }
 
 plot_icb_measure_by_year <- function(icb_data, measure, horizon) {
