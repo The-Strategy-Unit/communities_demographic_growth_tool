@@ -327,9 +327,13 @@ create_nat_contacts_summary <- function(contacts_count_init) {
     dplyr::filter(.data[["attendance_cat"]] == "Did Not Attend") |>
     dplyr::summarise(nat_contacts_not_attnded = sum(.data[["count"]]))
 
-  canclld_unk <- contacts_count_init |>
-    dplyr::filter(.data[["attendance_cat"]] %in% c("Cancelled", "Unknown")) |>
-    dplyr::summarise(nat_contacts_canclld_unk = sum(.data[["count"]]))
+  cancelled <- contacts_count_init |>
+    dplyr::filter(.data[["attendance_cat"]] == "Cancelled") |>
+    dplyr::summarise(nat_contacts_cancelled = sum(.data[["count"]]))
+
+  app_unknown <- contacts_count_init |>
+    dplyr::filter(.data[["attendance_cat"]] == "Unknown") |>
+    dplyr::summarise(nat_contacts_app_unknown = sum(.data[["count"]]))
 
   missing_age <- contacts_count_init |>
     dplyr::filter(is.na(.data[["age_int"]])) |>
@@ -352,7 +356,8 @@ create_nat_contacts_summary <- function(contacts_count_init) {
     missing_icb,
     inconsistnt,
     not_attnded,
-    canclld_unk,
+    cancelled,
+    app_unknown,
     missing_age,
     missing_gen,
     final_count
@@ -392,10 +397,17 @@ create_icb_contacts_summary <- function(contacts_count_init) {
       .by = "icb22cdh"
     )
 
-  canclld_unk <- contacts_count_init |>
-    dplyr::filter(.data[["attendance_cat"]] %in% c("Cancelled", "Unknown")) |>
+  cancelled <- contacts_count_init |>
+    dplyr::filter(.data[["attendance_cat"]] == "Cancelled") |>
     dplyr::summarise(
-      icb_contacts_canclld_unk = sum(.data[["count"]]),
+      icb_contacts_cancelled = sum(.data[["count"]]),
+      .by = "icb22cdh"
+    )
+
+  app_unknown <- contacts_count_init |>
+    dplyr::filter(.data[["attendance_cat"]] == "Unknown") |>
+    dplyr::summarise(
+      icb_contacts_app_unknown = sum(.data[["count"]]),
       .by = "icb22cdh"
     )
 
@@ -428,7 +440,8 @@ create_icb_contacts_summary <- function(contacts_count_init) {
     all_unfiltd,
     inconsistnt,
     not_attnded,
-    canclld_unk,
+    cancelled,
+    app_unknown,
     missing_age,
     missing_gen,
     final_count
