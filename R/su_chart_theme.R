@@ -2,7 +2,6 @@ su_chart_theme <- function(font_family = "Segoe UI") {
   slate <- "#686f73"
   dark_slate <- "#343739"
   light_slate <- "#b2b7b9"
-  light_bg <- "#f5f4f3" # hardcoded, colour comes from  Shiny theme?
   ggplot2::theme(
     text = ggplot2::element_text(
       family = font_family,
@@ -17,7 +16,7 @@ su_chart_theme <- function(font_family = "Segoe UI") {
     legend.key.spacing.y = grid::unit(3, "mm"),
     legend.key.width = grid::unit(20, "mm"),
     legend.direction = "horizontal",
-    panel.background = ggplot2::element_rect(fill = light_bg),
+    panel.background = ggplot2::element_blank(),
     panel.grid.major.y = ggplot2::element_line(
       colour = light_slate,
       linewidth = 0.4
