@@ -174,7 +174,7 @@ plot_count_per_population <- function(icb_data, measure) {
       position = "dodge",
       width = 0.75
     ) +
-    ggplot2::labs(x = "Age group", y = NULL) +
+    ggplot2::labs(x = "Age group", y = paste0(measure, " / population")) +
     ggplot2::scale_y_continuous(labels = NULL) +
     ggplot2::scale_fill_manual(
       name = NULL,
