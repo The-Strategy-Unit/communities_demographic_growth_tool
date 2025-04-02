@@ -51,6 +51,10 @@ icb_ui <- function(id) {
           shiny::plotOutput(ns("count_per_population"))
         ),
         bslib::nav_panel(
+          title = "Utilisation per patient",
+          shiny::plotOutput(ns("contacts_per_patient"))
+        ),
+        bslib::nav_panel(
           title = "Data quality",
           gt::gt_output(ns("data_quality_summary_table"))
         ),
@@ -106,6 +110,10 @@ icb_server <- function(id) {
 
     output$count_per_population <- shiny::renderPlot({
       plot_count_per_population(get_icb_data(), measure = input$measure)
+    })
+
+    output$contacts_per_patient <- shiny::renderPlot({
+      plot_contacts_per_patient(icb = input$icb)
     })
 
     output$percent_change_by_service <- shiny::renderPlot({
