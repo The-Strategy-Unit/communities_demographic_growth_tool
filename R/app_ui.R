@@ -3,6 +3,7 @@ app_ui <- function() {
     title = "Community services demographic growth",
     lang = "en",
     theme = bslib::bs_theme(brand = TRUE),
+    header = add_external_resources(),
     bslib::nav_panel(title = "National", national_ui("national")),
     bslib::nav_panel(title = "ICB", icb_ui("icb")),
     bslib::nav_panel(
@@ -11,23 +12,23 @@ app_ui <- function() {
         width = 1 / 3,
         bslib::card(
           bslib::card_header("About the tool"),
-          shiny::includeMarkdown("inst/www/about.md")
+          shiny::includeMarkdown(app_sys("www/about.md"))
         ),
         bslib::card(
           bslib::card_header("Community Services Data Set (CSDS)"),
-          shiny::includeMarkdown("inst/www/csds.md")
+          shiny::includeMarkdown(app_sys("www/csds.md"))
         ),
         bslib::card(
           bslib::card_header("Provider exclusions"),
-          shiny::includeMarkdown("inst/www/provider-exclusions.md")
+          shiny::includeMarkdown(app_sys("www/provider-exclusions.md"))
         ),
         bslib::card(
           bslib::card_header("Methodology"),
-          shiny::includeMarkdown("inst/www/methodology.md")
+          shiny::includeMarkdown(app_sys("www/methodology.md"))
         ),
         bslib::card(
           bslib::card_header("Population projections"),
-          shiny::includeMarkdown("inst/www/projections.md")
+          shiny::includeMarkdown(app_sys("www/projections.md"))
         )
       )
     )
