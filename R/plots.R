@@ -284,7 +284,7 @@ plot_contacts_per_patient <- function(icb) {
     pluck_data() |>
     prepare_plot_data("Contacts") |>
     dplyr::summarise(
-      across("projected_count", sum),
+      dplyr::across("projected_count", sum),
       .by = tidyselect::all_of(sum_cols)
     )
   icb_patients_data <- get_all_icb_data("Patients") |>
@@ -302,7 +302,7 @@ plot_contacts_per_patient <- function(icb) {
     pluck_data() |>
     prepare_plot_data("Contacts") |>
     dplyr::summarise(
-      across("projected_count", sum),
+      dplyr::across("projected_count", sum),
       .by = tidyselect::all_of(sum_cols)
     )
   nat_patients_data <- get_all_national_data("Patients") |>
@@ -343,7 +343,6 @@ plot_contacts_per_patient <- function(icb) {
       name = NULL,
       values = duo_colours(icb_name)
     ) +
-    ggplot2::coord_cartesian(ylim = c(0, y_lim)) +
     su_chart_theme()
 }
 
