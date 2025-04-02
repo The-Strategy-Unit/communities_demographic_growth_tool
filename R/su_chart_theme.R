@@ -1,4 +1,4 @@
-su_chart_theme <- function(font_family = "Segoe UI") {
+su_chart_theme <- function(font_family = "Open Sans") {
   slate <- "#686f73"
   dark_slate <- "#343739"
   light_slate <- "#b2b7b9"
