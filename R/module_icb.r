@@ -51,7 +51,12 @@ icb_ui <- function(id) {
           shiny::plotOutput(ns("count_per_population"))
         ),
         bslib::nav_panel(
-          title = "Data"
+          title = "Data quality",
+          gt::gt_output(ns("data_quality_summary_table"))
+        ),
+        footer = bslib::card_body(
+          fill = FALSE,
+          shiny::includeText("inst/www/warning-note.txt")
         )
       )
     )
