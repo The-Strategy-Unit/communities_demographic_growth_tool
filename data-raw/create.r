@@ -18,7 +18,7 @@ csds_data_init <- dplyr::tbl(
     patient_id = "Person_ID",
     contact_date = "Contact_Date",
     lsoa11cd = "Der_Postcode_yr2011_LSOA",
-    age_int = "AgeFirstContact2223",
+    age_int = "AgeYr_Contact_Date",
     gender_cat = "Gender",
     submitter_id = "OrgID_Provider",
     attendance_cat = "AttendanceOutcomeSU",
@@ -194,32 +194,41 @@ db_write_rds(nat_popn_fy_projected, "nat_popn_fy_projected.rds")
 
 # DBTITLE 1,create csds_data_tidy
 csds_data_tidy <- csds_data_init |>
-  dplyr::filter(!dplyr::if_any("patient_id", is.na)) |>
-  dbplyr::window_order(dplyr::pick("contact_date")) |>
-  # Very rough guess at when birthday might fall - earliest contact date
-  # within each recorded year of age. (Including 2021-22 data to improve guess).
-  dplyr::mutate(
-    estd_birth_month = min(.data[["contact_date"]], na.rm = TRUE),
-    .by = c("patient_id", "age_int"),
-    .keep = "unused"
+  dplyr::filter(
+    !dplyr::if_any("patient_id", is.na) &
+    dplyr::if_any("fin_year", \(x) x == "2022/23")
   ) |>
-  # Within each financial year there may be two options from the above
-  # (depending on how contacts are spread) - if so, take the later one!
+  dplyr::mutate(dplyr::across("age_int", as.integer)) |>
   dplyr::mutate(
-    across("estd_birth_month", \(x) lubridate::month(max(x, na.rm = TRUE))),
-    .by = c("patient_id", "fin_year")
+    min_date = min(.data[["contact_date"]], na.rm = TRUE),
+    max_date = max(.data[["contact_date"]], na.rm = TRUE),
+    .by = c("patient_id", "age_int")
   ) |>
-  # Within each patient's data there may be two options from the above - one per
-  # FY - if so, take the earlier one (should be closer to actual birthday).
-  dplyr::mutate(across("estd_birth_month", min), .by = "patient_id") |>
-  dplyr::filter(dplyr::if_any("fin_year", \(x) x == "2022/23")) |>
+  # Establish a single canonical age for each patient (if we guess their
+  # birthday falls between April and September then we take their higher
+  # recorded age in the dataset; if we think it falls between October and March
+  # we take their lower recorded age in the dataset. This is in order to match
+  # a mid-year ("as at October 1st") theoretical date for ONS population data.)
+  dplyr::mutate(
+    dplyr::across("age_int", \(x) {
+      dplyr::case_when(
+        dplyr::between(lubridate::month(min(max_date)), 4, 9) ~ max(x, na.rm = TRUE),
+        dplyr::between(lubridate::month(max(min_date)), 4, 9) ~ max(x, na.rm = TRUE),
+        .default = min(x, na.rm = TRUE)
+      )
+    }),
+    .by = "patient_id"
+  ) |>
+  dplyr::filter(
+    dplyr::if_any("age_int", \(x) x > 0) |
+    dplyr::if_any("min_date", \(x) x <= as.Date("2022-09-30"))
+  ) |>
   dplyr::mutate(
     consistent_ind = dplyr::if_else(
       .data[["submitter_id"]] %in% {{ consistent_submitters }},
       1L,
       0L
     ),
-    dplyr::across("age_int", as.integer),
     dplyr::across("age_int", \(x) dplyr::if_else(x > 90L, 90L, x)),
     dplyr::across("gender_cat", \(x) dplyr::if_else(x == "Unknown", NA, x)),
     # https://www.datadictionary.nhs.uk/data_elements/attendance_status.html
@@ -241,27 +250,8 @@ csds_data_tidy <- csds_data_init |>
   ) |>
   dplyr::left_join(lsoa11_lad18_lookup_eng, "lsoa11cd") |>
   dplyr::select(!c("fin_year", "lsoa11cd")) |>
+  dbplyr::window_order(dplyr::pick("contact_date")) |>
   dplyr::group_by(dplyr::pick("patient_id")) |>
-  # This step just gets rid of NAs. Values filled may be superseded by next
-  # line. It reduces NAs in the data from 172k to 17k.
-  tidyr::fill("age_int", .direction = "downup") |>
-  # Establish a single canonical age for each patient (if we guess their
-  # birthday falls between April and September then we take their higher
-  # recorded age in the dataset; if we think it falls between October and March
-  # we take their lower recorded age in the dataset. This is in order to match
-  # a mid-year ("as at October 1st") theoretical date for ONS population data.)
-  # Then fill that age across all rows for that patient (including overwriting
-  # any existing other recorded age... there should be a maximum of 2 ages!)
-  dplyr::mutate(
-    dplyr::across("age_int", \(x) {
-      dplyr::if_else(
-        any(dplyr::between(estd_birth_month, 4L, 9L)),
-        max(x),
-        min(x)
-      )
-    }),
-    .keep = "unused"
-  ) |>
   tidyr::fill(
     c("icb22cdh", "icb22nm", "gender_cat", "lad18cd"),
     .direction = "downup"
@@ -273,7 +263,7 @@ csds_data_tidy <- csds_data_init |>
 # DBTITLE 1,save csds_data_init to parquet
 sparklyr::spark_write_parquet(
   csds_data_tidy,
-  glue::glue("{db_vol}/csds_data_tidy"),
+  glue::glue("{db_vol}/csds_data_tidy_new"),
   mode = "overwrite"
 )
 
@@ -282,7 +272,7 @@ sparklyr::spark_write_parquet(
 csds_data_tidy <- sparklyr::spark_read_parquet(
   sc,
   "csds_data_tidy",
-  glue::glue("{db_vol}/csds_data_tidy")
+  glue::glue("{db_vol}/csds_data_tidy_new")
 )
 
 # COMMAND ----------
@@ -643,17 +633,21 @@ create_nat_unique_patients_summary <- function(patients_count_init) {
 # COMMAND ----------
 
 # DBTITLE 1,create data quality summary tables
-nat_contacts_summary <- create_nat_contacts_summary(contacts_count_init)
-icb_contacts_summary <- create_icb_contacts_summary(contacts_count_init)
-nat_patients_summary <- create_nat_patients_summary(patients_count_init)
-icb_patients_summary <- create_icb_patients_summary(patients_count_init)
+nat_contacts_summary <- create_nat_contacts_summary(contacts_count_init) |>
+  dplyr::collect()
+icb_contacts_summary <- create_icb_contacts_summary(contacts_count_init) |>
+  dplyr::collect()
+nat_patients_summary <- create_nat_patients_summary(patients_count_init) |>
+  dplyr::collect()
+icb_patients_summary <- create_icb_patients_summary(patients_count_init) |>
+  dplyr::collect()
 
 # COMMAND ----------
 
-db_write_rds(dplyr::collect(nat_contacts_summary), "nat_contacts_summary.rds")
-db_write_rds(dplyr::collect(icb_contacts_summary), "icb_contacts_summary.rds")
-db_write_rds(dplyr::collect(nat_patients_summary), "nat_patients_summary.rds")
-db_write_rds(dplyr::collect(icb_patients_summary), "icb_patients_summary.rds")
+db_write_rds(nat_contacts_summary, "nat_contacts_summary.rds")
+db_write_rds(icb_contacts_summary, "icb_contacts_summary.rds")
+db_write_rds(nat_patients_summary, "nat_patients_summary.rds")
+db_write_rds(icb_patients_summary, "icb_patients_summary.rds")
 
 # COMMAND ----------
 
@@ -737,13 +731,13 @@ db_write_rds(nat_unique_patients_summary, "nat_unique_patients_summary.rds")
 
 # COMMAND ----------
 
-popn_fy_projected <- db_read_rds("popn_fy_projected.rds")
+# popn_fy_projected <- db_read_rds("popn_fy_projected.rds")
 icb_popn_fy_projected <- db_read_rds("icb_popn_fy_projected.rds")
 nat_popn_fy_projected <- db_read_rds("nat_popn_fy_projected.rds")
-nat_patients_summary <- db_read_rds("nat_patients_summary.rds")
-icb_patients_summary <- db_read_rds("icb_patients_summary.rds")
-icb_unique_patients_summary <- db_read_rds("icb_unique_patients_summary.rds")
-nat_unique_patients_summary <- db_read_rds("nat_unique_patients_summary.rds")
+# nat_patients_summary <- db_read_rds("nat_patients_summary.rds")
+# icb_patients_summary <- db_read_rds("icb_patients_summary.rds")
+# icb_unique_patients_summary <- db_read_rds("icb_unique_patients_summary.rds")
+# nat_unique_patients_summary <- db_read_rds("nat_unique_patients_summary.rds")
 
 # COMMAND ----------
 
@@ -782,7 +776,7 @@ icb_patients_final <- icb_patients_count_init |>
 # COMMAND ----------
 
 # DBTITLE 1,write patient dataset 1 to rds
-db_write_rds(icb_patients_final, "icb_patients_final.rds")
+db_write_rds(icb_patients_final, "icb_patients_final2.rds")
 
 # COMMAND ----------
 
@@ -812,7 +806,7 @@ nat_patients_final <- icb_patients_count_init |>
 # COMMAND ----------
 
 # DBTITLE 1,write patient dataset 2 to rds
-db_write_rds(nat_patients_final, "nat_patients_final.rds")
+db_write_rds(nat_patients_final, "nat_patients_final2.rds")
 
 # COMMAND ----------
 
@@ -837,7 +831,6 @@ icb_contacts_count <- contacts_count_init |>
       dplyr::if_any("age_int", \(x) !is.na(x)) &
       dplyr::if_any("icb22cdh", \(x) !is.na(x))
   ) |>
-  dplyr::select(!tidyselect::any_of(dq_cols)) |>
   dplyr::summarise(
     across("count", sum),
     .by = tidyselect::all_of(c(icb_cols, join_cols, sv))
@@ -871,7 +864,7 @@ icb_contacts_final <- icb_contacts_count |>
 # COMMAND ----------
 
 # DBTITLE 1,write contacts dataset 1 to rds
-db_write_rds(icb_contacts_final, "icb_contacts_final.rds")
+db_write_rds(icb_contacts_final, "icb_contacts_final2.rds")
 
 # COMMAND ----------
 
@@ -899,4 +892,4 @@ nat_contacts_final <- icb_contacts_count |>
 # COMMAND ----------
 
 # DBTITLE 1,write contacts dataset 2 to rds
-db_write_rds(nat_contacts_final, "nat_contacts_final.rds")
+db_write_rds(nat_contacts_final, "nat_contacts_final2.rds")
