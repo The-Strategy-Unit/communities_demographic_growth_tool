@@ -47,11 +47,11 @@ icb_ui <- function(id) {
           shiny::plotOutput(ns("percent_change_by_service"))
         ),
         bslib::nav_panel(
-          title = "Utilisation",
+          title = "Population usage rate",
           shiny::plotOutput(ns("count_per_population"))
         ),
         bslib::nav_panel(
-          title = "Utilisation per patient",
+          title = "Patient usage rate",
           shiny::plotOutput(ns("contacts_per_patient"))
         ),
         bslib::nav_panel(
