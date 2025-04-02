@@ -354,8 +354,8 @@ plot_percent_change_by_service <- function(
       value = sum(.data[["projected_count"]]),
       .by = c("type", "fin_year", "service")
     ) |>
-    # Introduces NAs (which we can then use to remove services from the chart
-    # completely if any value (national or ICB, base or horizon) is missing).
+    # Introduces NAs, which we can then use to remove services from the chart
+    # completely if either value (national or ICB) is missing.
     tidyr::complete(.data$type, .data$fin_year, .data$service) |>
     dplyr::filter(!any(is.na(.data$value)), .by = "service") |>
     tidyr::pivot_wider(
@@ -389,5 +389,6 @@ plot_percent_change_by_service <- function(
       name = NULL,
       values = duo_colours(icb_data[["icb22nm"]])
     ) +
-    su_chart_theme()
+    su_chart_theme() +
+    ggplot2::theme(axis.text.y = ggplot2::element_text(size = 16))
 }
