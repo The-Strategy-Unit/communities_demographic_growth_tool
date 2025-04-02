@@ -174,8 +174,8 @@ plot_count_per_population <- function(icb_data, measure) {
       position = "dodge",
       width = 0.75
     ) +
-    ggplot2::labs(x = "Age group", y = paste0(measure, " / 1000 population")) +
-    ggplot2::scale_y_continuous(labels = scales::label_number(scale = 1e3)) +
+    ggplot2::labs(x = "Age group", y = NULL) +
+    ggplot2::scale_y_continuous(labels = NULL) +
     ggplot2::scale_fill_manual(
       name = NULL,
       values = duo_colours(icb_data[["icb22nm"]])
