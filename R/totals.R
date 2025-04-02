@@ -111,6 +111,7 @@ get_icb_sentence <- function(dat, measure, horizon) {
   percent_change <- round((hrz - bas) * 100 / bas, 1)
   horizon <- stringr::str_replace(horizon, "_", "/")
 
+  # nolint start line_length_linter
   glue::glue(
     "<p> For <b>{dat$icb22nm}</b> the total <b>{tolower(measure)}</b> estimated by <b>{horizon}</b> due to demand from population growth is <b>{fmt(hrz)}</b>. This is an increase of <b>{percent_change}%</b> above the 2022/23 baseline of <b>{fmt(bas)}</b>. However, this increase is an all-age figure and the percentage change can differs noticeably between age groups.</p>
 
@@ -123,4 +124,5 @@ get_icb_sentence <- function(dat, measure, horizon) {
 <p>Finally, data quality statistics are reported to demonstrate issues in data reporting. <b>{dat$icb22nm}</b> had <b>X%</b> of {tolower(measure)} excluded due to data quality issues.</p>"
   ) |>
     htmltools::HTML()
+  # nolint end
 }
