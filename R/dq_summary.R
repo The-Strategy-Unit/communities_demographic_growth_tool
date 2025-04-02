@@ -28,8 +28,7 @@ create_contacts_dq_table <- function(dat, icb = TRUE, label) {
     gt::gt() |>
     gt::tab_header(glue::glue("CSDS Data Quality Summary - {label}")) |>
     gt::fmt_number(columns = "n", decimals = 0) |>
-    gt::opt_footnote_marks("standard") |>
-    gt::opt_table_font("Segoe UI", size = 18)
+    gt::tab_options(table.background.color = "#fff0")
 }
 
 
@@ -60,7 +59,7 @@ create_patients_dq_table <- function(dat, icb = TRUE, label) {
     gt::gt() |>
     gt::tab_header(glue::glue("CSDS Data Quality Summary - {label}")) |>
     gt::fmt_number(columns = "n", decimals = 0) |>
-    gt::opt_footnote_marks("standard")
+    gt::tab_options(table.background.color = "#fff0")
 }
 
 create_icb_dq_summary_table <- function(dat, measure) {
