@@ -390,5 +390,5 @@ plot_percent_change_by_service <- function(
       values = duo_colours(icb_data[["icb22nm"]])
     ) +
     su_chart_theme() +
-    ggplot2::theme(axis.text.y = ggplot2::element_text(size = 16))
+    ggplot2::theme(axis.text.y = ggplot2::element_text(size = 14))
 }
