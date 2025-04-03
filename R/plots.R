@@ -133,10 +133,7 @@ plot_percent_change_by_age <- function(icb_data, measure, horizon) {
     ) +
     ggplot2::geom_hline(yintercept = 0, linewidth = 0.4, colour = light_blue) +
     ggplot2::labs(x = "Age group", y = "% change") +
-    ggplot2::scale_y_continuous(
-      labels = scales::label_percent(suffix = ""),
-      limits = c(-0.25, NA)
-    ) +
+    ggplot2::scale_y_continuous(labels = scales::label_percent(suffix = "")) +
     ggplot2::scale_fill_manual(
       name = NULL,
       values = duo_colours(icb_data[["icb22nm"]])
