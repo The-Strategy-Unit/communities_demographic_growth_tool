@@ -1,17 +1,18 @@
-su_chart_theme <- function(font_family = "Open Sans") {
+su_chart_theme <- function() {
   slate <- "#686f73"
   dark_slate <- "#343739"
   light_slate <- "#b2b7b9"
+  light_bg <- "#f5f4f2"
   ggplot2::theme(
     text = ggplot2::element_text(
-      family = font_family,
+      family = "Open Sans",
       size = 20,
       colour = dark_slate
     ),
     title = ggplot2::element_text(hjust = 0.05),
-    panel.background = ggplot2::element_rect(fill = "#f5f4f2"),
-    plot.background = ggplot2::element_rect(fill = "#f5f4f2"),
-    legend.background = ggplot2::element_rect(fill = "#f5f4f2"),
+    panel.background = ggplot2::element_rect(fill = light_bg),
+    plot.background = ggplot2::element_rect(fill = light_bg),
+    legend.background = ggplot2::element_rect(fill = light_bg),
     legend.position = "bottom",
     legend.title.position = "left",
     legend.text.position = "bottom",
