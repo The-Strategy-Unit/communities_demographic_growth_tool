@@ -103,11 +103,6 @@ national_ui <- function(id) {
 
 national_server <- function(id) {
   shiny::moduleServer(id, function(input, output, session) {
-    get_nat_dq_data <- shiny::reactive({
-      get_all_national_data(measure = "Contacts") |>
-        dplyr::select(!"data")
-    })
-
     output$national_contacts_by_year <- shiny::renderPlot({
       plot_national_contacts_by_year()
     })
@@ -125,7 +120,7 @@ national_server <- function(id) {
     })
 
     output$data_quality_summary_table <- gt::render_gt({
-      create_nat_dq_summary_table(get_nat_dq_data(), measure = "Contacts")
+      create_nat_dq_summary_table("Contacts")
     })
   })
 }

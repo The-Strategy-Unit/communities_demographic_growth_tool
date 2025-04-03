@@ -74,14 +74,7 @@ icb_server <- function(id) {
   shiny::moduleServer(id, function(input, output, session) {
     get_icb_data <- shiny::reactive({
       get_all_icb_data(measure = input$measure) |>
-        dplyr::filter(.data$icb22cdh == input$icb) |>
-        dplyr::select(c("icb22cdh", "icb22nm", "data"))
-    })
-
-    get_icb_dq_data <- shiny::reactive({
-      get_all_icb_data(measure = input$measure) |>
-        dplyr::filter(.data$icb22cdh == input$icb) |>
-        dplyr::select(!"data")
+        dplyr::filter(.data$icb22cdh == input$icb)
     })
 
     output$icb_sentence <- shiny::renderUI({
@@ -125,7 +118,7 @@ icb_server <- function(id) {
     })
 
     output$data_quality_summary_table <- gt::render_gt({
-      create_icb_dq_summary_table(get_icb_dq_data(), measure = input$measure)
+      create_icb_dq_summary_table(get_icb_data(), measure = input$measure)
     })
   })
 }

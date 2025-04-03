@@ -15,6 +15,7 @@ create_contacts_dq_table <- function(dat, icb = TRUE, label) {
   if (icb) category_names <- category_names[-icb_cat]
 
   dat |>
+    dplyr::select(!"data") |>
     dplyr::rename_with(\(x) category_names) |>
     tidyr::pivot_longer(
       cols = tidyselect::everything(),
@@ -50,6 +51,7 @@ create_patients_dq_table <- function(dat, icb = TRUE, label) {
   icb_cat <- stringr::str_which(category_names, "ICB$")
   if (icb) category_names <- category_names[-icb_cat]
   dat |>
+    dplyr::select(!"data") |>
     dplyr::rename_with(\(x) category_names) |>
     tidyr::pivot_longer(
       cols = tidyselect::everything(),
@@ -79,7 +81,8 @@ create_icb_dq_summary_table <- function(dat, measure) {
   )
 }
 
-create_nat_dq_summary_table <- function(dat, measure) {
+create_nat_dq_summary_table <- function(measure) {
+  dat <- get_all_national_data(measure)
   switch(
     measure,
     Contacts = create_contacts_dq_table(dat, FALSE, label = "National"),
