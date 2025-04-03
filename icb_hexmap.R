@@ -60,7 +60,7 @@ allocate_region <- function(results, region) {
 
 # Place Devon and Cornwall earlier, to reduce elongation of region
 cluster_sw <- function(swdf) {
-  nested <- dplyr::nest_by(swdf, dplyr::pick("icb23cdh"), .keep = TRUE)
+  nested <- dplyr::nest_by(swdf, .data$icb23cdh, .keep = TRUE)
   c("QR1", "QUY", "QSL", "QJK", "QT6", "QVV", "QOX") |>
     tibble::as_tibble_col("icb23cdh") |>
     dplyr::left_join(nested, "icb23cdh") |>

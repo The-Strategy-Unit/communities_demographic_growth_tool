@@ -12,29 +12,29 @@ national_ui <- function(id) {
       bslib::value_box(
         title = NULL,
         value = glue::glue(
-          "{round(get_national_baseline_count('Contacts') / 1000000,1)} million"
+          "{round(get_national_baseline_count('Contacts') / 1e6, 1)} million"
         ),
         showcase = bsicons::bs_icon("clipboard-pulse"),
         shiny::p("contacts in 2022/23")
       ),
       bslib::value_box(
         title = NULL,
-        value = glue::glue("{get_national_pct_change('Contacts')}% increase"),
+        value = glue::glue("{get_national_pct_change('Contacts')}%"),
         showcase = bsicons::bs_icon("arrow-up-right"),
-        shiny::p("in contacts forecast by 2042/43")
+        shiny::p("projected increase in contacts by 2042/43")
       ),
       bslib::value_box(
         title = NULL,
         value = glue::glue(
-          "{round(get_national_horizon_count('Contacts') / 1000000,1)} million"
+          "{round(get_national_horizon_count('Contacts') / 1e6, 1)} million"
         ),
         showcase = bsicons::bs_icon("graph-up"),
-        shiny::p("contacts estimated in 2042/43")
+        shiny::p("projected contacts in 2042/43")
       ),
       bslib::value_box(
         title = NULL,
         value = glue::glue(
-          "{round(get_national_baseline_count('Patients') / 1000000,1)} million"
+          "{round(get_national_baseline_count('Patients') / 1e6, 1)} million"
         ),
         showcase = bsicons::bs_icon("people-fill"),
         shiny::p("patients in 2022/23")
@@ -103,11 +103,6 @@ national_ui <- function(id) {
 
 national_server <- function(id) {
   shiny::moduleServer(id, function(input, output, session) {
-    get_nat_dq_data <- shiny::reactive({
-      get_all_national_data(measure = "Contacts") |>
-        dplyr::select(!"data")
-    })
-
     output$national_contacts_by_year <- shiny::renderPlot({
       plot_national_contacts_by_year()
     })
@@ -125,7 +120,7 @@ national_server <- function(id) {
     })
 
     output$data_quality_summary_table <- gt::render_gt({
-      create_nat_dq_summary_table(get_nat_dq_data(), measure = "Contacts")
+      create_nat_dq_summary_table("Contacts")
     })
   })
 }
