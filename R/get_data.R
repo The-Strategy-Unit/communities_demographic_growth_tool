@@ -26,7 +26,7 @@ pluck_data <- \(dat) dat[["data"]][[1]]
 icb_list <- function() {
   get_all_icb_data("Contacts") |>
     dplyr::select(c("icb22nm", "icb22cdh")) |>
-    dplyr::arrange(dplyr::pick("icb22nm")) |>
+    dplyr::arrange(.data$icb22nm) |>
     tibble::deframe()
 }
 

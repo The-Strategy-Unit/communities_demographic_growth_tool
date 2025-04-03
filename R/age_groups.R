@@ -1,6 +1,6 @@
 add_age_groups <- function(dat) {
   dat |>
-    dplyr::arrange(dplyr::pick("age_int")) |>
+    dplyr::arrange(.data$age_int) |>
     dplyr::mutate(
       age_group_cat = dplyr::case_when(
         .data[["age_int"]] == 0L ~ "0",
@@ -20,7 +20,7 @@ add_age_groups <- function(dat) {
 
 add_broad_age_groups <- function(dat) {
   dat |>
-    dplyr::arrange(dplyr::pick("age_int")) |>
+    dplyr::arrange(.data$age_int) |>
     dplyr::mutate(
       broad_age_cat = dplyr::case_when(
         .data[["age_int"]] %in% seq(0L, 4L) ~ "0-4",
