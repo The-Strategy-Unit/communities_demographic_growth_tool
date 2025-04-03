@@ -9,6 +9,9 @@ su_chart_theme <- function(font_family = "Segoe UI") {
       colour = dark_slate
     ),
     title = ggplot2::element_text(hjust = 0.05),
+    panel.background = ggplot2::element_rect(fill = "#f5f4f2"),
+    plot.background = ggplot2::element_rect(fill = "#f5f4f2"),
+    legend.background = ggplot2::element_rect(fill = "#f5f4f2"),
     legend.position = "bottom",
     legend.title.position = "left",
     legend.text.position = "bottom",
@@ -16,7 +19,6 @@ su_chart_theme <- function(font_family = "Segoe UI") {
     legend.key.spacing.y = grid::unit(3, "mm"),
     legend.key.width = grid::unit(20, "mm"),
     legend.direction = "horizontal",
-    panel.background = ggplot2::element_blank(),
     panel.grid.major.y = ggplot2::element_line(
       colour = light_slate,
       linewidth = 0.4
