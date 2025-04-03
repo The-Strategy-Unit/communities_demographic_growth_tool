@@ -95,18 +95,18 @@ prepare_plot_data <- function(dat, measure = c("Contacts", "Patients")) {
   }
 }
 
-
-plot_percent_change_by_age <- function(
-  icb_data,
-  measure,
-  horizon = "2042_43"
-) {
-  light_blue <- "#5881c1"
+bind_national_icb_data <- function(icb_data, measure) {
   list(get_all_national_data(measure), icb_data) |>
     purrr::map(pluck_data) |>
     rlang::set_names(c("England", icb_data[["icb22nm"]])) |>
     dplyr::bind_rows(.id = "type") |>
-    dplyr::mutate(dplyr::across("type", forcats::fct_inorder)) |>
+    dplyr::mutate(dplyr::across("type", forcats::fct_inorder))
+}
+
+
+plot_percent_change_by_age <- function(icb_data, measure, horizon) {
+  light_blue <- "#5881c1"
+  bind_national_icb_data(icb_data, measure) |>
     dplyr::filter(.data$fin_year %in% c("2022_23", horizon)) |>
     prepare_plot_data(measure) |>
     add_age_groups() |>
@@ -144,12 +144,9 @@ plot_percent_change_by_age <- function(
     su_chart_theme()
 }
 
+
 plot_count_per_population <- function(icb_data, measure) {
-  list(get_all_national_data(measure), icb_data) |>
-    rlang::set_names(c("England", icb_data[["icb22nm"]])) |>
-    purrr::map(pluck_data) |>
-    dplyr::bind_rows(.id = "type") |>
-    dplyr::mutate(dplyr::across("type", forcats::fct_inorder)) |>
+  bind_national_icb_data(icb_data, measure) |>
     dplyr::filter(dplyr::if_any("fin_year", \(x) x == "2022_23")) |>
     dplyr::rename(fin_year_popn = "proj_popn_by_fy_age") |>
     prepare_plot_data(measure) |>
@@ -331,20 +328,12 @@ plot_contacts_per_patient <- function(icb) {
 }
 
 
-plot_percent_change_by_service <- function(
-  icb_data,
-  measure,
-  horizon = "2042_43"
-) {
+plot_percent_change_by_service <- function(icb_data, measure, horizon) {
   light_blue <- "#5881c1"
-  list(get_all_national_data(measure), icb_data) |>
-    purrr::map(pluck_data) |>
-    rlang::set_names(c("England", icb_data[["icb22nm"]])) |>
-    dplyr::bind_rows(.id = "type") |>
+  bind_national_icb_data(icb_data, measure) |>
     dplyr::filter(.data$fin_year %in% c("2022_23", horizon)) |>
     tidyr::unnest("data") |>
     dplyr::mutate(
-      dplyr::across("type", forcats::fct_inorder),
       dplyr::across("service", \(x) tidyr::replace_na(x, "Not recorded")),
       dplyr::across("service", \(x) sub(" Service", "", x)),
       dplyr::across("service", \(x) sub("Adult's", "Adults", x)),
