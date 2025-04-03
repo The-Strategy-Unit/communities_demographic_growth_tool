@@ -193,7 +193,8 @@ get_icb_sentence <- function(dat, measure, horizon) {
     {names(age_grp_pct_change)}</strong> with a difference of <strong>
     {round(age_grp_pct_change, 1)}%</strong>.</p>
 
-    <p>We can also consider the breakdown by service. For <strong>{dat$icb22nm}</strong>, the service with the largest percentage change in <strong>
+    <p>We can also consider the breakdown by service. For <strong>{dat$icb22nm}
+    </strong>, the service with the largest percentage change in <strong>
     {tolower(measure)}</strong> by <strong>{horizon}</strong> is <strong>
     {names(service_pct_change)}</strong> with a difference of <strong>
     {round(service_pct_change, 1)}%</strong>.</p>
