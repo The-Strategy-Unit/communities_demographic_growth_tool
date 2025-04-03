@@ -101,7 +101,7 @@ plot_percent_change_by_age <- function(
   measure,
   horizon = "2042_43"
 ) {
-  dark_slate <- "#343739"
+  light_blue <- "#5881c1"
   list(get_all_national_data(measure), icb_data) |>
     purrr::map(pluck_data) |>
     rlang::set_names(c("England", icb_data[["icb22nm"]])) |>
@@ -131,7 +131,7 @@ plot_percent_change_by_age <- function(
       position = "dodge",
       width = 0.75
     ) +
-    ggplot2::geom_hline(yintercept = 0, linewidth = 0.4, colour = dark_slate) +
+    ggplot2::geom_hline(yintercept = 0, linewidth = 0.4, colour = light_blue) +
     ggplot2::labs(x = "Age group", y = "% change") +
     ggplot2::scale_y_continuous(
       labels = scales::label_percent(suffix = ""),
@@ -336,7 +336,7 @@ plot_percent_change_by_service <- function(
   measure,
   horizon = "2042_43"
 ) {
-  dark_slate <- "#343739"
+  light_blue <- "#5881c1"
   list(get_all_national_data(measure), icb_data) |>
     purrr::map(pluck_data) |>
     rlang::set_names(c("England", icb_data[["icb22nm"]])) |>
@@ -382,7 +382,7 @@ plot_percent_change_by_service <- function(
       position = "dodge",
       width = 0.75
     ) +
-    ggplot2::geom_vline(xintercept = 0, linewidth = 0.4, colour = dark_slate) +
+    ggplot2::geom_vline(xintercept = 0, linewidth = 0.7, colour = light_blue) +
     ggplot2::labs(x = NULL, y = NULL) +
     ggplot2::scale_x_continuous(labels = scales::label_percent(suffix = "%")) +
     ggplot2::scale_fill_manual(
