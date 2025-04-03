@@ -103,12 +103,79 @@ get_national_sentence <- function(measure = c("Contacts", "Patients")) {
     htmltools::HTML()
 }
 
+get_icb_age_group_change <- function(dat, measure, horizon) {
+  dat |>
+    pluck_data() |>
+    prepare_plot_data(measure) |>
+    dplyr::filter(.data$fin_year %in% c("2022_23", horizon)) |>
+    add_age_groups() |>
+    dplyr::summarise(
+      value = sum(.data$projected_count),
+      .by = c("fin_year", "age_group_cat")
+    ) |>
+    tidyr::pivot_wider(
+      id_cols = "age_group_cat",
+      names_from = "fin_year",
+      names_prefix = "yr_"
+    ) |>
+    dplyr::mutate(
+      pct_change = (.data[[glue::glue("yr_{horizon}")]] -
+        .data[["yr_2022_23"]]) /
+        .data[["yr_2022_23"]],
+      .keep = "unused"
+    ) |>
+    dplyr::mutate(dplyr::across("pct_change", \(x) x * 100)) |>
+    dplyr::slice_max(.data$pct_change) |>
+    tibble::deframe()
+}
+
+
+get_icb_service_change <- function(dat, measure, horizon) {
+  dat |>
+    pluck_data() |>
+    dplyr::filter(.data$fin_year %in% c("2022_23", horizon)) |>
+    tidyr::unnest("data") |>
+    dplyr::filter(!is.na(.data$service)) |>
+    dplyr::mutate(
+      dplyr::across("service", \(x) sub(" Service", "", x)),
+      dplyr::across("service", \(x) sub("Adult's", "Adults", x)),
+      dplyr::across("service", \(x) sub("Children's", "Children", x))
+    ) |>
+    dplyr::summarise(
+      value = sum(.data$projected_count),
+      .by = c("fin_year", "service")
+    ) |>
+    tidyr::pivot_wider(
+      id_cols = "service",
+      names_from = "fin_year",
+      names_prefix = "yr_"
+    ) |>
+    dplyr::mutate(
+      pct_change = (.data[[glue::glue("yr_{horizon}")]] -
+        .data[["yr_2022_23"]]) /
+        .data[["yr_2022_23"]],
+      .keep = "unused"
+    ) |>
+    dplyr::mutate(dplyr::across("pct_change", \(x) x * 100)) |>
+    dplyr::slice_max(.data$pct_change) |>
+    tibble::deframe()
+}
+
+get_dq_exclusion_rate <- function(dat, measure) {
+  total <- dat[[glue::glue("icb_{tolower(measure)}_all_unfiltd")]]
+  excl <- dat[[glue::glue("icb_{tolower(measure)}_total_excld")]]
+  round(excl * 100 / total, 1)
+}
+
 
 get_icb_sentence <- function(dat, measure, horizon) {
   fmt <- \(x) format(round(x, -3), big.mark = ",")
   bas <- get_total_fy_count(dat, "2022_23")
   hrz <- get_total_fy_count(dat, horizon)
-  percent_change <- round((hrz - bas) * 100 / bas, 1)
+  overall_pct_change <- round((hrz - bas) * 100 / bas, 1)
+  age_grp_pct_change <- get_icb_age_group_change(dat, measure, horizon)
+  service_pct_change <- get_icb_service_change(dat, measure, horizon)
+  dq_exclusion_rate <- get_dq_exclusion_rate(dat, measure)
   horizon <- stringr::str_replace(horizon, "_", "/")
 
   # nolint start line_length_linter
