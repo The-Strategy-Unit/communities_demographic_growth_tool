@@ -204,7 +204,7 @@ get_icb_sentence <- function(dat, measure, horizon) {
     {tolower(measure)}</strong> by the population in the baseline year 2022/23.
     However, as we know the data in the baseline year is an under-estimate due
     to data quality issues, this graph will also underestimate the true
-    utilisation of community services.</p>
+    utilisation of community services - hence our decision to not show actual numbers.</p>
 
     <p>The patient usage rate plot shows the number of contacts per 1,000
     patients in each age group, based on 2022/23 data only. The data for
