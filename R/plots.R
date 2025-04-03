@@ -315,8 +315,7 @@ plot_contacts_per_patient <- function(icb) {
       position = "dodge",
       width = 0.75
     ) +
-    ggplot2::labs(x = "Age group", y = "Contacts / 1000 patients") +
-    ggplot2::scale_y_continuous(labels = scales::label_number(scale = 1e3)) +
+    ggplot2::labs(x = "Age group", y = "Contacts / patient") +
     ggplot2::scale_fill_manual(
       name = NULL,
       values = duo_colours(icb_name)
