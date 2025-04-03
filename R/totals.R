@@ -178,18 +178,44 @@ get_icb_sentence <- function(dat, measure, horizon) {
   dq_exclusion_rate <- get_dq_exclusion_rate(dat, measure)
   horizon <- stringr::str_replace(horizon, "_", "/")
 
-  # nolint start line_length_linter
   glue::glue(
-    "<p> For <b>{dat$icb22nm}</b> the total <b>{tolower(measure)}</b> estimated by <b>{horizon}</b> due to demand from population growth is <b>{fmt(hrz)}</b>. This is an increase of <b>{percent_change}%</b> above the 2022/23 baseline of <b>{fmt(bas)}</b>. However, this increase is an all-age figure and the percentage change can differs noticeably between age groups.</p>
+    "<p> For <strong>{dat$icb22nm}</strong> the total <strong>{tolower(measure)}
+    </strong> estimated by <strong>{horizon}</strong> due to demand from
+    population growth is <strong>{fmt(hrz)}</strong>. This is an increase of
+    <strong>{overall_pct_change}%</strong> above the 2022/23 baseline of
+    <strong>{fmt(bas)}</strong>. However, this increase is an all-age figure
+    and the percentage change can differ noticeably between age groups.</p>
 
-<p>We can look at the percentage change by age for <b>{dat$icb22nm}</b> in more detail and compare it England. The age group with the largest percentage change in <b>{tolower(measure)}</b> by <b>{horizon}</b> is <b>00 - 00</b> with a difference of <b>X%</b>.</p>
+    <p>We can look at the percentage change by age for <strong>{dat$icb22nm}
+    </strong> in more detail and compare it to the change across England as a
+    whole. The age group with the largest percentage change in <strong>
+    {tolower(measure)}</strong> by <strong>{horizon}</strong> is <strong>
+    {names(age_grp_pct_change)}</strong> with a difference of <strong>
+    {round(age_grp_pct_change, 1)}%</strong>.</p>
 
-<p>We can also consider the breakdown by service. For <b>{dat$icb22nm}</b>, the service with the largest percentage change in <b>{tolower(measure)}</b> by <b>{horizon}</b> is <b>X service</b> with a difference of <b>X%</b>.</p>
+    <p>We can also consider the breakdown by service. For <strong>{dat$icb22nm}</strong>, the service with the largest percentage change in <strong>
+    {tolower(measure)}</strong> by <strong>{horizon}</strong> is <strong>
+    {names(service_pct_change)}</strong> with a difference of <strong>
+    {round(service_pct_change, 1)}%</strong>.</p>
 
-<p>The utilisation plot gives an idea of service usage across age groups. This is calculated by dividing the number of <b>{tolower(measure)}</b> by the population in the baseline year 2022/23. However, as we know the data in the baseline year is an under-estimate due to data quality issues, this graph will also underestimate the true utilisation of community services.</p>
+    <p>The population usage rate plot gives an idea of service usage across age
+    groups. This is calculated by dividing the number of <strong>
+    {tolower(measure)}</strong> by the population in the baseline year 2022/23.
+    However, as we know the data in the baseline year is an under-estimate due
+    to data quality issues, this graph will also underestimate the true
+    utilisation of community services.</p>
 
-<p>Finally, data quality statistics are reported to demonstrate issues in data reporting. <b>{dat$icb22nm}</b> had <b>X%</b> of {tolower(measure)} excluded due to data quality issues.</p>"
+    <p>The patient usage rate plot shows the number of contacts per 1,000
+    patients in each age group, based on 2022/23 data only. The data for
+    <strong>{dat$icb22nm}</strong> can be compared to rates for England as a
+    whole. While the pattern may vary from ICB to ICB, in general it is
+    patients in the older age groups who have more contacts with community
+    services.</p>
+
+    <p>Finally, data quality statistics are reported to demonstrate issues in
+    data reporting. <strong>{dq_exclusion_rate}%</strong> of all initial
+    {tolower(measure)} in the <strong>{dat$icb22nm}</strong>'s data were
+    excluded due to data quality issues.</p>"
   ) |>
     htmltools::HTML()
-  # nolint end
 }
