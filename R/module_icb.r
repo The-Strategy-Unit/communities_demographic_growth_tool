@@ -47,11 +47,11 @@ icb_ui <- function(id) {
           shiny::plotOutput(ns("percent_change_by_service"))
         ),
         bslib::nav_panel(
-          title = "Utilisation",
+          title = "Population usage rate",
           shiny::plotOutput(ns("count_per_population"))
         ),
         bslib::nav_panel(
-          title = "Utilisation per patient",
+          title = "Patient usage rate",
           shiny::plotOutput(ns("contacts_per_patient"))
         ),
         bslib::nav_panel(
@@ -74,14 +74,7 @@ icb_server <- function(id) {
   shiny::moduleServer(id, function(input, output, session) {
     get_icb_data <- shiny::reactive({
       get_all_icb_data(measure = input$measure) |>
-        dplyr::filter(.data$icb22cdh == input$icb) |>
-        dplyr::select(c("icb22cdh", "icb22nm", "data"))
-    })
-
-    get_icb_dq_data <- shiny::reactive({
-      get_all_icb_data(measure = input$measure) |>
-        dplyr::filter(.data$icb22cdh == input$icb) |>
-        dplyr::select(!"data")
+        dplyr::filter(.data$icb22cdh == input$icb)
     })
 
     output$icb_sentence <- shiny::renderUI({
@@ -125,7 +118,7 @@ icb_server <- function(id) {
     })
 
     output$data_quality_summary_table <- gt::render_gt({
-      create_icb_dq_summary_table(get_icb_dq_data(), measure = input$measure)
+      create_icb_dq_summary_table(get_icb_data(), measure = input$measure)
     })
   })
 }

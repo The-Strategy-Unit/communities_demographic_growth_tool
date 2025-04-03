@@ -103,26 +103,121 @@ get_national_sentence <- function(measure = c("Contacts", "Patients")) {
     htmltools::HTML()
 }
 
+get_icb_age_group_change <- function(dat, measure, horizon) {
+  dat |>
+    pluck_data() |>
+    prepare_plot_data(measure) |>
+    dplyr::filter(.data$fin_year %in% c("2022_23", horizon)) |>
+    add_age_groups() |>
+    dplyr::summarise(
+      value = sum(.data$projected_count),
+      .by = c("fin_year", "age_group_cat")
+    ) |>
+    tidyr::pivot_wider(
+      id_cols = "age_group_cat",
+      names_from = "fin_year",
+      names_prefix = "yr_"
+    ) |>
+    dplyr::mutate(
+      pct_change = (.data[[glue::glue("yr_{horizon}")]] -
+        .data[["yr_2022_23"]]) /
+        .data[["yr_2022_23"]],
+      .keep = "unused"
+    ) |>
+    dplyr::mutate(dplyr::across("pct_change", \(x) x * 100)) |>
+    dplyr::slice_max(.data$pct_change) |>
+    tibble::deframe()
+}
+
+
+get_icb_service_change <- function(dat, measure, horizon) {
+  dat |>
+    pluck_data() |>
+    dplyr::filter(.data$fin_year %in% c("2022_23", horizon)) |>
+    tidyr::unnest("data") |>
+    dplyr::filter(!is.na(.data$service)) |>
+    dplyr::mutate(
+      dplyr::across("service", \(x) sub(" Service", "", x)),
+      dplyr::across("service", \(x) sub("Adult's", "Adults", x)),
+      dplyr::across("service", \(x) sub("Children's", "Children", x))
+    ) |>
+    dplyr::summarise(
+      value = sum(.data$projected_count),
+      .by = c("fin_year", "service")
+    ) |>
+    tidyr::pivot_wider(
+      id_cols = "service",
+      names_from = "fin_year",
+      names_prefix = "yr_"
+    ) |>
+    dplyr::mutate(
+      pct_change = (.data[[glue::glue("yr_{horizon}")]] -
+        .data[["yr_2022_23"]]) /
+        .data[["yr_2022_23"]],
+      .keep = "unused"
+    ) |>
+    dplyr::mutate(dplyr::across("pct_change", \(x) x * 100)) |>
+    dplyr::slice_max(.data$pct_change) |>
+    tibble::deframe()
+}
+
+get_dq_exclusion_rate <- function(dat, measure) {
+  total <- dat[[glue::glue("icb_{tolower(measure)}_all_unfiltd")]]
+  excl <- dat[[glue::glue("icb_{tolower(measure)}_total_excld")]]
+  round(excl * 100 / total, 1)
+}
+
 
 get_icb_sentence <- function(dat, measure, horizon) {
   fmt <- \(x) format(round(x, -3), big.mark = ",")
   bas <- get_total_fy_count(dat, "2022_23")
   hrz <- get_total_fy_count(dat, horizon)
-  percent_change <- round((hrz - bas) * 100 / bas, 1)
+  overall_pct_change <- round((hrz - bas) * 100 / bas, 1)
+  age_grp_pct_change <- get_icb_age_group_change(dat, measure, horizon)
+  service_pct_change <- get_icb_service_change(dat, measure, horizon)
+  dq_exclusion_rate <- get_dq_exclusion_rate(dat, measure)
   horizon <- stringr::str_replace(horizon, "_", "/")
 
-  # nolint start line_length_linter
   glue::glue(
-    "<p> For <b>{dat$icb22nm}</b> the total <b>{tolower(measure)}</b> estimated by <b>{horizon}</b> due to demand from population growth is <b>{fmt(hrz)}</b>. This is an increase of <b>{percent_change}%</b> above the 2022/23 baseline of <b>{fmt(bas)}</b>. However, this increase is an all-age figure and the percentage change can differs noticeably between age groups.</p>
+    "<p> For <strong>{dat$icb22nm}</strong> the total <strong>{tolower(measure)}
+    </strong> estimated by <strong>{horizon}</strong> due to demand from
+    population growth is <strong>{fmt(hrz)}</strong>. This is an increase of
+    <strong>{overall_pct_change}%</strong> above the 2022/23 baseline of
+    <strong>{fmt(bas)}</strong>. However, this increase is an all-age figure
+    and the percentage change can differ noticeably between age groups.</p>
 
-<p>We can look at the percentage change by age for <b>{dat$icb22nm}</b> in more detail and compare it England. The age group with the largest percentage change in <b>{tolower(measure)}</b> by <b>{horizon}</b> is <b>00 - 00</b> with a difference of <b>X%</b>.</p>
+    <p>We can look at the percentage change by age for <strong>{dat$icb22nm}
+    </strong> in more detail and compare it to the change across England as a
+    whole. The age group with the largest percentage change in <strong>
+    {tolower(measure)}</strong> by <strong>{horizon}</strong> is <strong>
+    {names(age_grp_pct_change)}</strong> with a difference of <strong>
+    {round(age_grp_pct_change, 1)}%</strong>.</p>
 
-<p>We can also consider the breakdown by service. For <b>{dat$icb22nm}</b>, the service with the largest percentage change in <b>{tolower(measure)}</b> by <b>{horizon}</b> is <b>X service</b> with a difference of <b>X%</b>.</p>
+    <p>We can also consider the breakdown by service. For <strong>{dat$icb22nm}
+    </strong>, the service with the largest percentage change in <strong>
+    {tolower(measure)}</strong> by <strong>{horizon}</strong> is <strong>
+    {names(service_pct_change)}</strong> with a difference of <strong>
+    {round(service_pct_change, 1)}%</strong>.</p>
 
-<p>The utilisation plot gives an idea of service usage across age groups. This is calculated by dividing the number of <b>{tolower(measure)}</b> by the population in the baseline year 2022/23. However, as we know the data in the baseline year is an under-estimate due to data quality issues, this graph will also underestimate the true utilisation of community services.</p>
+    <p>The population usage rate plot gives an idea of service usage across age
+    groups. This is calculated by dividing the number of <strong>
+    {tolower(measure)}</strong> by the population in the baseline year 2022/23.
+    However, as we know the data in the baseline year is an under-estimate due
+    to data quality issues, this graph will also underestimate the true
+    utilisation of community services - hence our decision to not show actual
+    numbers.</p>
 
-<p>Finally, data quality statistics are reported to demonstrate issues in data reporting. <b>{dat$icb22nm}</b> had <b>X%</b> of {tolower(measure)} excluded due to data quality issues.</p>"
+    <p>The patient usage rate plot shows the number of contacts per 1,000
+    patients in each age group, based on 2022/23 data only. The data for
+    <strong>{dat$icb22nm}</strong> can be compared to rates for England as a
+    whole. While the pattern may vary from ICB to ICB, in general it is
+    patients in the older age groups who have more contacts with community
+    services.</p>
+
+    <p>Finally, data quality statistics are reported to demonstrate issues in
+    data reporting. <strong>{dq_exclusion_rate}%</strong> of all initial
+    {tolower(measure)} in the <strong>{dat$icb22nm}</strong>'s data were
+    excluded due to data quality issues.</p>"
   ) |>
     htmltools::HTML()
-  # nolint end
 }
