@@ -206,7 +206,7 @@ plot_contacts_per_patient <- function(icb) {
     contacts = icb_contacts_data,
     patients = icb_patients_data
   ) |>
-    dplyr::bind_rows(.id = "dataset")
+    dplyr::bind_rows(.id = "measure")
 
   nat_contacts_data <- get_all_national_data("Contacts") |>
     pluck_data() |>
@@ -223,7 +223,7 @@ plot_contacts_per_patient <- function(icb) {
     contacts = nat_contacts_data,
     patients = nat_patients_data
   ) |>
-    dplyr::bind_rows(.id = "dataset")
+    dplyr::bind_rows(.id = "measure")
 
   list(nat_data, icb_data) |>
     rlang::set_names(c("England", icb_name)) |>
@@ -233,10 +233,10 @@ plot_contacts_per_patient <- function(icb) {
     add_age_groups() |>
     dplyr::summarise(
       dplyr::across("projected_count", sum),
-      .by = c("type", "dataset", "age_group_cat")
+      .by = c("type", "measure", "age_group_cat")
     ) |>
     dplyr::rename(count = "projected_count") |>
-    tidyr::pivot_wider(values_from = "count", names_from = "dataset") |>
+    tidyr::pivot_wider(values_from = "count", names_from = "measure") |>
     dplyr::mutate(
       rate = .data[["contacts"]] / .data[["patients"]],
       .keep = "unused"
@@ -280,7 +280,7 @@ plot_contacts_per_patient <- function(icb) {
     contacts = icb_contacts_data,
     patients = icb_patients_data
   ) |>
-    dplyr::bind_rows(.id = "dataset")
+    dplyr::bind_rows(.id = "measure")
 
   nat_contacts_data <- get_all_national_data("Contacts") |>
     pluck_data() |>
@@ -297,7 +297,7 @@ plot_contacts_per_patient <- function(icb) {
     contacts = nat_contacts_data,
     patients = nat_patients_data
   ) |>
-    dplyr::bind_rows(.id = "dataset")
+    dplyr::bind_rows(.id = "measure")
 
   list(nat_data, icb_data) |>
     rlang::set_names(c("England", icb_name)) |>
@@ -307,10 +307,10 @@ plot_contacts_per_patient <- function(icb) {
     add_age_groups() |>
     dplyr::summarise(
       dplyr::across("projected_count", sum),
-      .by = c("type", "dataset", "age_group_cat")
+      .by = c("type", "measure", "age_group_cat")
     ) |>
     dplyr::rename(count = "projected_count") |>
-    tidyr::pivot_wider(values_from = "count", names_from = "dataset") |>
+    tidyr::pivot_wider(values_from = "count", names_from = "measure") |>
     dplyr::mutate(
       rate = .data[["contacts"]] / .data[["patients"]],
       .keep = "unused"
