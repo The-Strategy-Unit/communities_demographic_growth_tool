@@ -85,9 +85,11 @@ env.bak/
 venv.bak/
 
 # Data files
+data/
 *.csv
 *.parquet
 *.arrow
+*.rda
 *.rds
 *.xml
 
