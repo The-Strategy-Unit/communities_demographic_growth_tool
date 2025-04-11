@@ -60,7 +60,7 @@ icb_ui <- function(id) {
         ),
         footer = bslib::card_body(
           fill = FALSE,
-          shiny::includeText("inst/www/warning-note.txt")
+          shiny::includeText(app_sys("www/warning-note.txt"))
         )
       )
     )
