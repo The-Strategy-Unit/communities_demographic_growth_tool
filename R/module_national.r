@@ -79,10 +79,10 @@ national_ui <- function(id) {
           title = "Data quality",
           bslib::layout_column_wrap(
             width = NULL,
-            style = bslib::css(grid_template_columns = "1fr 3fr"),
+            style = bslib::css(grid_template_columns = "2fr 5fr"),
             height = 300,
             bslib::card(
-              shiny::p("Some text about the data quality")
+              shiny::includeMarkdown(app_sys("www/national-dq-description.md"))
             ),
             bslib::card(
               gt::gt_output(ns("data_quality_summary_table"))
