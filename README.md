@@ -15,3 +15,4 @@ This means that they do not take into account potential changes in national poli
 The projection used is the principal projection.
 
 The app does not take into account non-demographic change such as mitigations; it is a projection based on 2022/23 recorded activity only.
+
