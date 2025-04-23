@@ -15,7 +15,7 @@ Population projections are for calendar years but NHS planning and commissioning
 
 As the projection of community contacts was based on how the population was projected to change by age, gender and local authority, it was important not to duplicate patients where they may have appeared multiple times. For example, a patient with contacts both before and after their birthday would be counted twice under two ages – falsely lowering the rate of care estimates. To counter this, for the factors of age and gender only one value was assigned to patient for the duration of the baseline year. For age, the age at first contact in 2022/23 was used. 
 
-## Community Services Dataset (CDSD)
+## Community Services Dataset (CSDS)
 
 Baseline community activity is those community contacts in 2022/23 as recorded in the CSDS. The CSDS data underwent several processing steps before being used in this tool.
 
