@@ -180,6 +180,7 @@ plot_count_per_population <- function(icb_data, measure) {
 plot_contacts_per_patient <- function(icb) {
   icb_name <- get_all_icb_data("Contacts") |>
     dplyr::filter(.data$icb22cdh == {{ icb }}) |>
+    dplyr::collect() |>
     dplyr::pull("icb22nm")
   sum_cols <- c("proj_popn_by_fy_age", "fin_year", "age_int")
 
