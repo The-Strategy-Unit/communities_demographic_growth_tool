@@ -1,9 +1,8 @@
 get_total_fy_count <- function(dat, fy) {
   dat |>
     pluck_data() |>
-    dplyr::filter(.data[["fin_year"]] == {{ fy }}) |>
-    dplyr::reframe(dplyr::across("data", dplyr::bind_rows)) |>
-    purrr::pluck("data", "projected_count") |>
+    dplyr::filter(.data$fin_year == {{ fy }}) |>
+    dplyr::pull("projected_count") |>
     sum()
 }
 
@@ -21,8 +20,7 @@ get_national_pct_change <- function(measure) {
 
 get_national_sentence_data <- function(measure = c("Contacts", "Patients")) {
   dat <- get_all_national_data(measure) |>
-    pluck_data() |>
-    prepare_plot_data(measure)
+    pluck_data()
 
   all_baseline <- dat |>
     dplyr::filter(.data$fin_year == "2022_23") |>
@@ -106,7 +104,6 @@ get_national_sentence <- function(measure = c("Contacts", "Patients")) {
 get_icb_age_group_change <- function(dat, measure, horizon) {
   dat |>
     pluck_data() |>
-    prepare_plot_data(measure) |>
     dplyr::filter(.data$fin_year %in% c("2022_23", horizon)) |>
     add_age_groups() |>
     dplyr::summarise(
@@ -132,22 +129,18 @@ get_icb_age_group_change <- function(dat, measure, horizon) {
 
 get_icb_service_change <- function(dat, measure, horizon) {
   dat |>
-    pluck_data() |>
-    dplyr::filter(.data$fin_year %in% c("2022_23", horizon)) |>
-    tidyr::unnest("data") |>
-    dplyr::filter(!is.na(.data$service)) |>
+    pluck_service_data() |>
+    dplyr::filter(
+      .data$fin_year %in% c("2022_23", horizon) & !is.na(.data$service)
+    ) |>
     dplyr::mutate(
       dplyr::across("service", \(x) sub(" Service", "", x)),
       dplyr::across("service", \(x) sub("Adult's", "Adults", x)),
       dplyr::across("service", \(x) sub("Children's", "Children", x))
     ) |>
-    dplyr::summarise(
-      value = sum(.data$projected_count),
-      .by = c("fin_year", "service")
-    ) |>
     tidyr::pivot_wider(
-      id_cols = "service",
       names_from = "fin_year",
+      values_from = "projected_count",
       names_prefix = "yr_"
     ) |>
     dplyr::mutate(
