@@ -16,6 +16,7 @@ get_all_national_data <- function(measure) {
 
 pull_unique <- \(dat, col) unique(dat[[col]])
 pluck_data <- \(dat) dat[["data"]][[1]]
+pluck_service_data <- \(dat) dat[["service_data"]][[1]]
 
 icb_list <- function() {
   get_all_icb_data("Contacts") |>
