@@ -17,6 +17,7 @@ LazyDataCompression: xz
 Depends:
     R (>= 4.1)
 Imports:
+    arrow,
     bsicons,
     bslib,
     dplyr (>= 1.1),
@@ -34,6 +35,4 @@ Imports:
     tidyr,
     tidyselect
 Suggests:
-    brickster,
-    lubridate,
-    usethis
+    brickster
