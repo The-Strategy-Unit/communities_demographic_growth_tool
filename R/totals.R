@@ -24,8 +24,8 @@ get_national_sentence_data <- function(measure = c("Contacts", "Patients")) {
 
   all_baseline <- dat |>
     dplyr::filter(.data$fin_year == "2022_23") |>
-    dplyr::summarise(dplyr::across("projected_count", sum)) |>
-    dplyr::pull("projected_count")
+    dplyr::pull("projected_count") |>
+    sum()
   baseline_age_group_counts <- dat |>
     dplyr::filter(.data$fin_year == "2022_23") |>
     add_broad_age_groups() |>
@@ -38,8 +38,8 @@ get_national_sentence_data <- function(measure = c("Contacts", "Patients")) {
 
   all_midpoint <- dat |>
     dplyr::filter(.data$fin_year == "2032_33") |>
-    dplyr::summarise(dplyr::across("projected_count", sum)) |>
-    dplyr::pull("projected_count")
+    dplyr::pull("projected_count") |>
+    sum()
   midpoint_age_group_counts <- dat |>
     dplyr::filter(.data$fin_year == "2032_33") |>
     add_broad_age_groups() |>
@@ -52,8 +52,8 @@ get_national_sentence_data <- function(measure = c("Contacts", "Patients")) {
 
   all_horizon <- dat |>
     dplyr::filter(.data$fin_year == "2042_43") |>
-    dplyr::summarise(dplyr::across("projected_count", sum)) |>
-    dplyr::pull("projected_count")
+    dplyr::pull("projected_count") |>
+    sum()
   horizon_age_group_counts <- dat |>
     dplyr::filter(.data$fin_year == "2042_43") |>
     add_broad_age_groups() |>

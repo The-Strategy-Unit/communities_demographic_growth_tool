@@ -191,11 +191,10 @@ plot_contacts_per_patient <- function(icb) {
     dplyr::filter(dplyr::if_any("fin_year", \(x) x == "2022_23")) |>
     add_age_groups() |>
     dplyr::summarise(
-      dplyr::across("projected_count", sum),
+      value = sum(.data[["projected_count"]]),
       .by = c("type", "measure", "age_group_cat")
     ) |>
-    dplyr::rename(count = "projected_count") |>
-    tidyr::pivot_wider(values_from = "count", names_from = "measure") |>
+    tidyr::pivot_wider(names_from = "measure") |>
     dplyr::mutate(
       rate = .data[["contacts"]] / .data[["patients"]],
       .keep = "unused"
@@ -218,9 +217,13 @@ plot_contacts_per_patient <- function(icb) {
 
 plot_percent_change_by_service <- function(icb_data, measure, horizon) {
   light_blue <- "#5881c1"
-  bind_national_icb_data(icb_data, measure) |>
+  list(get_all_national_data(measure), icb_data) |>
+    purrr::map(pluck_service_data) |>
+    rlang::set_names(c("England", icb_data[["icb22nm"]])) |>
+    dplyr::bind_rows(.id = "type") |>
     dplyr::filter(.data$fin_year %in% c("2022_23", horizon)) |>
     dplyr::mutate(
+      dplyr::across("type", forcats::fct_inorder),
       dplyr::across("service", \(x) tidyr::replace_na(x, "Not recorded")),
       dplyr::across("service", \(x) sub(" Service", "", x)),
       dplyr::across("service", \(x) sub("Adult's", "Adults", x)),
@@ -231,14 +234,10 @@ plot_percent_change_by_service <- function(icb_data, measure, horizon) {
       .by = c("type", "fin_year", "service")
     ) |>
     # Introduces NAs, which we can then use to remove services from the chart
-    # completely if either value (national or ICB) is missing.
+    # completely if the ICB value is missing.
     tidyr::complete(.data$type, .data$fin_year, .data$service) |>
     dplyr::filter(!any(is.na(.data$value)), .by = "service") |>
-    tidyr::pivot_wider(
-      id_cols = c("type", "service"),
-      names_from = "fin_year",
-      names_prefix = "yr_"
-    ) |>
+    tidyr::pivot_wider(names_from = "fin_year", names_prefix = "yr_") |>
     dplyr::mutate(
       pct_change = (.data[[glue::glue("yr_{horizon}")]] -
         .data[["yr_2022_23"]]) /
