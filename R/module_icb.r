@@ -74,7 +74,8 @@ icb_server <- function(id) {
   shiny::moduleServer(id, function(input, output, session) {
     get_icb_data <- shiny::reactive({
       get_all_icb_data(measure = input$measure) |>
-        dplyr::filter(.data$icb22cdh == input$icb)
+        dplyr::filter(.data$icb22cdh == input$icb) |>
+        dplyr::collect()
     })
 
     output$icb_sentence <- shiny::renderUI({
