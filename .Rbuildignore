@@ -1,5 +1,6 @@
 ^air.toml$
-^CSDSDemographicGrowthApp\.Rproj$
+^.*\.Rproj$
+^.*\.code-workspace$
 ^\.Rproj\.user$
 ^app.R$
 ^LICENSE\.md$
@@ -9,3 +10,8 @@
 ^.lintr$
 ^_brand.yml$
 ^rsconnect/
+^.*\.rds$
+^nat_contacts_final$
+^icb_contacts_final$
+^nat_patients_final$
+^icb_patients_final$
