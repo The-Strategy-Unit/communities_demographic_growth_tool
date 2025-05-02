@@ -19,14 +19,17 @@ patients using the services.
 
 ## Running the app locally
 
-Clone the package repository and check you have all the required R dependencies installed (see the DESCRIPTION file for
-the package list).
+Install the package:
+
+```r
+remotes::install_github("The-Strategy-Unit/communities_demographic_growth_tool")
+```
+
 
 Pull down the source data for the tool from the Databricks system using the functions and steps in `data-raw/export.R`.
-
 (You will need access to Databricks via an auth token).
 
-This should create four folders in the root of the repository:
+This should create four folders in your current working directory:
 
 * icb_contacts_final
 * icb_patients_final
@@ -35,14 +38,12 @@ This should create four folders in the root of the repository:
 
 These folders contain the source data for the app in [parquet][pqt] format.
 
-Then you can run the app with:
+Then you can launch the app with:
 
 ```r
-devtools::load_all()
+library(CSDSDemographicGrowthApp)
 run_app()
 ```
-
-This should launch the app in the viewer pane of your IDE, and/or in a browser tab.
 
 The tool's official deployment is on the SU's [Connect server][tool].
 
