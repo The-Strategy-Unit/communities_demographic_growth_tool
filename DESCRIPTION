@@ -1,6 +1,6 @@
 Package: CSDSDemographicGrowthApp
 Title: Exploring the impact of demographic growth on community services demand
-Version: 0.0.99
+Version: 1.0.0
 Authors@R:
     c(
     person("Francis", "Barton", email = "francis.barton@nhs.net", role = c("aut", "cre")),
