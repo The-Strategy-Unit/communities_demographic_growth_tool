@@ -1,5 +1,5 @@
 write_db_dataset_to_rds <- function(rds_file) {
-  db_vol <- "/Volumes/strategyunit/csds_fb/csds_patients/"
+  db_vol <- "/Volumes/strategyunit/csds_fb/cdgt_rds_files/"
   filename <- paste0(rds_file, ".rds")
   brickster::db_volume_read(paste0(db_vol, filename), filename)
   invisible(TRUE)
