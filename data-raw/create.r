@@ -47,7 +47,7 @@ consistent_subs <- dplyr::tbl(
 # COMMAND ----------
 
 # DBTITLE 1,helper functions
-db_vol <- "/Volumes/strategyunit/csds_fb/csds_patients"
+db_vol <- "/Volumes/strategyunit/csds_fb/cdgt_rds_files"
 db_write_rds <- \(x, f) readr::write_rds(x, glue::glue("{db_vol}/{f}"))
 db_read_rds <- \(f) readr::read_rds(glue::glue("{db_vol}/{f}"))
 
