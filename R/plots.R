@@ -216,6 +216,9 @@ plot_contacts_per_patient <- function(icb) {
 
 
 plot_percent_change_by_service <- function(icb_data, measure, horizon) {
+  x_axis_title <- glue::glue(
+    "% change in {tolower(measure)} between 2022/23 and horizon year"
+  )
   light_blue <- "#5881c1"
   list(get_all_national_data(measure), icb_data) |>
     purrr::map(pluck_service_data) |>
@@ -258,7 +261,7 @@ plot_percent_change_by_service <- function(icb_data, measure, horizon) {
       width = 0.75
     ) +
     ggplot2::geom_vline(xintercept = 0, linewidth = 0.7, colour = light_blue) +
-    ggplot2::labs(x = NULL, y = NULL) +
+    ggplot2::labs(x = x_axis_title, y = NULL) +
     ggplot2::scale_x_continuous(labels = scales::label_percent(suffix = "%")) +
     ggplot2::scale_fill_manual(
       name = NULL,
