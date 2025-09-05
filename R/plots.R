@@ -87,6 +87,9 @@ bind_national_icb_data <- function(icb_data, measure) {
 
 
 plot_percent_change_by_age <- function(icb_data, measure, horizon) {
+  y_axis_title <- glue::glue(
+    "% change in {tolower(measure)} between 2022/23 and horizon year"
+  )
   light_blue <- "#5881c1"
   bind_national_icb_data(icb_data, measure) |>
     dplyr::filter(.data$fin_year %in% c("2022_23", horizon)) |>
@@ -113,7 +116,7 @@ plot_percent_change_by_age <- function(icb_data, measure, horizon) {
       width = 0.75
     ) +
     ggplot2::geom_hline(yintercept = 0, linewidth = 0.4, colour = light_blue) +
-    ggplot2::labs(x = "Age group", y = "% change") +
+    ggplot2::labs(x = "Age group", y = y_axis_title) +
     ggplot2::scale_y_continuous(labels = scales::label_percent(suffix = "")) +
     ggplot2::scale_fill_manual(
       name = NULL,
