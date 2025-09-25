@@ -26,36 +26,38 @@ icb_ui <- function(id) {
     ),
     bslib::layout_column_wrap(
       width = NULL,
-      style = bslib::css(grid_template_columns = "1fr 3fr"),
       height = 300,
-      bslib::card(
-        shiny::htmlOutput(ns("icb_sentence"))
-      ),
       bslib::navset_card_pill(
         placement = "above",
         full_screen = TRUE,
         bslib::nav_panel(
           title = "Totals by age",
+          shiny::htmlOutput(ns("total_paragraph")),
           shiny::plotOutput(ns("icb_measure_by_year"))
         ),
         bslib::nav_panel(
           title = "% change by age",
+          shiny::htmlOutput(ns("age_paragraph")),
           shiny::plotOutput(ns("percent_change_by_age"))
         ),
         bslib::nav_panel(
           title = "% change by service",
+          shiny::htmlOutput(ns("service_paragraph")),
           shiny::plotOutput(ns("percent_change_by_service"))
         ),
         bslib::nav_panel(
           title = "Population usage rate",
+          shiny::htmlOutput(ns("population_usage_paragraph")),
           shiny::plotOutput(ns("count_per_population"))
         ),
         bslib::nav_panel(
           title = "Patient usage rate",
+          shiny::htmlOutput(ns("patient_usage_paragraph")),
           shiny::plotOutput(ns("contacts_per_patient"))
         ),
         bslib::nav_panel(
           title = "Data quality",
+          shiny::htmlOutput(ns("data_quality_paragraph")),
           gt::gt_output(ns("data_quality_summary_table"))
         ),
         footer = bslib::card_body(
@@ -78,14 +80,14 @@ icb_server <- function(id) {
         dplyr::collect()
     })
 
-    output$icb_sentence <- shiny::renderUI({
-      get_icb_sentence(
+    # Overall
+    output$total_paragraph <- shiny::renderUI({
+      get_icb_paragraph_total(
         get_icb_data(),
         measure = input$measure,
         horizon = input$horizon
       )
     })
-
     output$icb_measure_by_year <- shiny::renderPlot({
       plot_icb_measure_by_year(
         get_icb_data(),
@@ -94,6 +96,14 @@ icb_server <- function(id) {
       )
     })
 
+    # Age
+    output$age_paragraph <- shiny::renderUI({
+      get_icb_paragraph_age(
+        get_icb_data(),
+        measure = input$measure,
+        horizon = input$horizon
+      )
+    })
     output$percent_change_by_age <- shiny::renderPlot({
       plot_percent_change_by_age(
         get_icb_data(),
@@ -102,20 +112,46 @@ icb_server <- function(id) {
       )
     })
 
-    output$count_per_population <- shiny::renderPlot({
-      plot_count_per_population(get_icb_data(), measure = input$measure)
+    # Service
+    output$service_paragraph <- shiny::renderUI({
+      get_icb_paragraph_service(
+        get_icb_data(),
+        measure = input$measure,
+        horizon = input$horizon
+      )
     })
-
-    output$contacts_per_patient <- shiny::renderPlot({
-      plot_contacts_per_patient(icb = input$icb)
-    })
-
     output$percent_change_by_service <- shiny::renderPlot({
       plot_percent_change_by_service(
         get_icb_data(),
         measure = input$measure,
         horizon = input$horizon
       )
+    })
+
+    # Population usage
+    output$population_usage_paragraph <- shiny::renderUI({
+      get_icb_paragraph_population_usage(
+        get_icb_data(),
+        measure = input$measure
+      )
+    })
+
+    output$count_per_population <- shiny::renderPlot({
+      plot_count_per_population(get_icb_data(), measure = input$measure)
+    })
+
+    # Patient usage
+    output$patient_usage_paragraph <- shiny::renderUI({
+      get_icb_paragraph_patient_usage(get_icb_data())
+    })
+
+    output$contacts_per_patient <- shiny::renderPlot({
+      plot_contacts_per_patient(icb = input$icb)
+    })
+
+    # Data Quality
+    output$data_quality_paragraph <- shiny::renderUI({
+      get_icb_paragraph_dq(get_icb_data(), measure = input$measure)
     })
 
     output$data_quality_summary_table <- gt::render_gt({

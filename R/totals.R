@@ -160,57 +160,89 @@ get_dq_exclusion_rate <- function(dat, measure) {
   round(excl * 100 / total, 1)
 }
 
+# Paragraphs
 
-get_icb_sentence <- function(dat, measure, horizon) {
+get_icb_paragraph_total <- function(dat, measure, horizon) {
   fmt <- \(x) format(round(x, -3), big.mark = ",")
   bas <- get_total_fy_count(dat, "2022_23")
   hrz <- get_total_fy_count(dat, horizon)
   overall_pct_change <- round((hrz - bas) * 100 / bas, 1)
+  horizon_formatted <- stringr::str_replace(horizon, "_", "/")
+  glue::glue(
+    "<p>For <strong>{dat$icb22nm}</strong> the total <strong>{tolower(measure)}
+    </strong> estimated by <strong>{horizon_formatted}</strong> due to demand
+    from population growth is <strong>{fmt(hrz)}</strong>. This is an
+    increase of <strong>{overall_pct_change}%</strong> above the 2022/23
+    baseline of <strong>{fmt(bas)}</strong>. However, this increase is an
+    all-age figure and the percentage change can differ noticeably
+    between age groups.</p>"
+  ) |>
+    htmltools::HTML()
+}
+
+get_icb_paragraph_age <- function(dat, measure, horizon) {
   age_grp_pct_change <- get_icb_age_group_change(dat, measure, horizon)
-  service_pct_change <- get_icb_service_change(dat, measure, horizon)
-  dq_exclusion_rate <- get_dq_exclusion_rate(dat, measure)
-  horizon <- stringr::str_replace(horizon, "_", "/")
+  horizon_formatted <- stringr::str_replace(horizon, "_", "/")
 
   glue::glue(
-    "<p> For <strong>{dat$icb22nm}</strong> the total <strong>{tolower(measure)}
-    </strong> estimated by <strong>{horizon}</strong> due to demand from
-    population growth is <strong>{fmt(hrz)}</strong>. This is an increase of
-    <strong>{overall_pct_change}%</strong> above the 2022/23 baseline of
-    <strong>{fmt(bas)}</strong>. However, this increase is an all-age figure
-    and the percentage change can differ noticeably between age groups.</p>
-
-    <p>We can look at the percentage change by age for <strong>{dat$icb22nm}
+    "<p>We can look at the percentage change by age for <strong>{dat$icb22nm}
     </strong> in more detail and compare it to the change across England as a
     whole. The age group with the largest percentage change in <strong>
-    {tolower(measure)}</strong> by <strong>{horizon}</strong> is <strong>
-    {names(age_grp_pct_change)}</strong> with a difference of <strong>
-    {round(age_grp_pct_change, 1)}%</strong>.</p>
+    {tolower(measure)}</strong> by <strong>{horizon_formatted}</strong> is
+    <strong>{names(age_grp_pct_change)}</strong> with a difference of
+    <strong>{round(age_grp_pct_change, 1)}%</strong>.</p>"
+  ) |>
+    htmltools::HTML()
+}
 
-    <p>We can also consider the breakdown by service. For <strong>{dat$icb22nm}
-    </strong>, the service with the largest percentage change in <strong>
-    {tolower(measure)}</strong> by <strong>{horizon}</strong> is <strong>
-    {names(service_pct_change)}</strong> with a difference of <strong>
-    {round(service_pct_change, 1)}%</strong>.</p>
+get_icb_paragraph_service <- function(dat, measure, horizon) {
+  service_pct_change <- get_icb_service_change(dat, measure, horizon)
+  horizon_formatted <- stringr::str_replace(horizon, "_", "/")
 
-    <p>The population usage rate plot gives an idea of service usage across age
-    groups. This is calculated by dividing the number of <strong>
-    {tolower(measure)}</strong> by the population in the baseline year 2022/23.
+  glue::glue(
+    "<p>We can also consider the breakdown by service. For 
+    <strong>{dat$icb22nm}</strong>, the service with the largest 
+    percentage change in <strong>{tolower(measure)}</strong> 
+    by <strong>{horizon_formatted}</strong> is 
+    <strong>{names(service_pct_change)}</strong> with a difference of <strong>
+    {round(service_pct_change, 1)}%</strong>.</p>"
+  ) |>
+    htmltools::HTML()
+}
+
+get_icb_paragraph_population_usage <- function(dat, measure) {
+  glue::glue(
+    "<p>The population usage rate plot gives an idea of service usage across age
+    groups for <strong>{dat$icb22nm}</strong>.
+    This is calculated by dividing the number of <strong>{tolower(measure)}
+    </strong> by the population in the baseline year 2022/23.
     However, as we know the data in the baseline year is an under-estimate due
     to data quality issues, this graph will also underestimate the true
     utilisation of community services - hence our decision to not show actual
-    numbers.</p>
+    numbers.</p>"
+  ) |>
+    htmltools::HTML()
+}
 
-    <p>The patient usage rate plot shows the number of contacts per 1,000
+get_icb_paragraph_patient_usage <- function(dat) {
+  glue::glue(
+    "<p>The patient usage rate plot shows the number of contacts per 1,000
     patients in each age group, based on 2022/23 data only. The data for
     <strong>{dat$icb22nm}</strong> can be compared to rates for England as a
     whole. While the pattern may vary from ICB to ICB, in general it is
     patients in the older age groups who have more contacts with community
-    services.</p>
+    services.</p>"
+  ) |>
+    htmltools::HTML()
+}
 
-    <p>Finally, data quality statistics are reported to demonstrate issues in
-    data reporting. <strong>{dq_exclusion_rate}%</strong> of all initial
-    {tolower(measure)} in the <strong>{dat$icb22nm}</strong>'s data were
-    excluded due to data quality issues.</p>"
+get_icb_paragraph_dq <- function(dat, measure) {
+  dq_exclusion_rate <- get_dq_exclusion_rate(dat, measure)
+  glue::glue(
+    "<p>Data quality statistics are reported to demonstrate issues in
+  data reporting. <strong>{dq_exclusion_rate}%</strong> of all initial
+  {tolower(measure)} in the <strong>{dat$icb22nm}</strong>'s data were
+  excluded due to data quality issues.</p>"
   ) |>
     htmltools::HTML()
 }
