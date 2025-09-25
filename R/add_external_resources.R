@@ -12,6 +12,7 @@ add_external_resources <- function() {
       shiny::tags$script(type = "text/javascript", src = "www/logo.js"),
     )
   )
+  shinyjs::useShinyjs()
 }
 
 #' @noRd
