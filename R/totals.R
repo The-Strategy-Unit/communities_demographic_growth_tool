@@ -239,7 +239,11 @@ get_icb_paragraph_patient_usage <- function(dat) {
 get_icb_paragraph_dq <- function(dat, measure) {
   dq_exclusion_rate <- get_dq_exclusion_rate(dat, measure)
   glue::glue(
-    "<p>Data quality statistics are reported to demonstrate issues in
+    "<p>CSDS data is known to be under reported, as a result,
+  absolute volumes of community services are undercounted.
+  Some providers of community care have been excluded due
+  to data quality issues.  
+  Data quality statistics are reported to demonstrate issues in
   data reporting. <strong>{dq_exclusion_rate}%</strong> of all initial
   {tolower(measure)} in the <strong>{dat$icb22nm}</strong>'s data were
   excluded due to data quality issues.</p>"

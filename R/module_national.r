@@ -88,10 +88,6 @@ national_ui <- function(id) {
               gt::gt_output(ns("data_quality_summary_table"))
             )
           )
-        ),
-        footer = bslib::card_body(
-          fill = FALSE,
-          shiny::includeText(app_sys("www/warning-note.txt"))
         )
       )
     )
