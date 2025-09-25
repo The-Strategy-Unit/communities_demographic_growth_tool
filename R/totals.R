@@ -170,11 +170,12 @@ get_icb_paragraph_total <- function(dat, measure, horizon) {
   horizon_formatted <- stringr::str_replace(horizon, "_", "/")
   glue::glue(
     "<p>For <strong>{dat$icb22nm}</strong> the total <strong>{tolower(measure)}
-    </strong> estimated by <strong>{horizon_formatted}</strong> due to demand from
-    population growth is <strong>{fmt(hrz)}</strong>. This is an increase of
-    <strong>{overall_pct_change}%</strong> above the 2022/23 baseline of
-    <strong>{fmt(bas)}</strong>. However, this increase is an all-age figure
-    and the percentage change can differ noticeably between age groups.</p>"
+    </strong> estimated by <strong>{horizon_formatted}</strong> due to demand
+    from population growth is <strong>{fmt(hrz)}</strong>. This is an
+    increase of <strong>{overall_pct_change}%</strong> above the 2022/23
+    baseline of <strong>{fmt(bas)}</strong>. However, this increase is an
+    all-age figure and the percentage change can differ noticeably
+    between age groups.</p>"
   ) |>
     htmltools::HTML()
 }
@@ -187,9 +188,9 @@ get_icb_paragraph_age <- function(dat, measure, horizon) {
     "<p>We can look at the percentage change by age for <strong>{dat$icb22nm}
     </strong> in more detail and compare it to the change across England as a
     whole. The age group with the largest percentage change in <strong>
-    {tolower(measure)}</strong> by <strong>{horizon_formatted}</strong> is <strong>
-    {names(age_grp_pct_change)}</strong> with a difference of <strong>
-    {round(age_grp_pct_change, 1)}%</strong>.</p>"
+    {tolower(measure)}</strong> by <strong>{horizon_formatted}</strong> is
+    <strong>{names(age_grp_pct_change)}</strong> with a difference of
+    <strong>{round(age_grp_pct_change, 1)}%</strong>.</p>"
   ) |>
     htmltools::HTML()
 }
