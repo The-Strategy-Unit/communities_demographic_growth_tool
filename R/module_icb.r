@@ -28,35 +28,42 @@ icb_ui <- function(id) {
       width = NULL,
       height = 300,
       bslib::navset_card_pill(
+        id = ns("navset"),
         placement = "above",
         full_screen = TRUE,
         bslib::nav_panel(
           title = "Totals by age",
+          value = "total",
           shiny::htmlOutput(ns("total_paragraph")),
           shiny::plotOutput(ns("icb_measure_by_year"))
         ),
         bslib::nav_panel(
           title = "% change by age",
+          value = "age",
           shiny::htmlOutput(ns("age_paragraph")),
           shiny::plotOutput(ns("percent_change_by_age"))
         ),
         bslib::nav_panel(
           title = "% change by service",
+          value = "service",
           shiny::htmlOutput(ns("service_paragraph")),
           shiny::plotOutput(ns("percent_change_by_service"))
         ),
         bslib::nav_panel(
           title = "Population usage rate",
+          value = "population",
           shiny::htmlOutput(ns("population_usage_paragraph")),
           shiny::plotOutput(ns("count_per_population"))
         ),
         bslib::nav_panel(
           title = "Patient usage rate",
+          value = "patient",
           shiny::htmlOutput(ns("patient_usage_paragraph")),
           shiny::plotOutput(ns("contacts_per_patient"))
         ),
         bslib::nav_panel(
           title = "Data quality",
+          value = "dq",
           shiny::htmlOutput(ns("data_quality_paragraph")),
           gt::gt_output(ns("data_quality_summary_table"))
         ),
@@ -74,6 +81,19 @@ icb_ui <- function(id) {
 
 icb_server <- function(id) {
   shiny::moduleServer(id, function(input, output, session) {
+    shiny::observe({
+      if (input$navset %in% c("total", "age", "service")) {
+        shinyjs::enable("measure")
+        shinyjs::enable("horizon")
+      } else if (input$navset %in% c("population", "dq")) {
+        shinyjs::enable("measure")
+        shinyjs::disable("horizon")
+      } else if (input$navset == "patient") {
+        shinyjs::disable("measure")
+        shinyjs::disable("horizon")
+      }
+    })
+
     get_icb_data <- shiny::reactive({
       get_all_icb_data(measure = input$measure) |>
         dplyr::filter(.data$icb22cdh == input$icb) |>
