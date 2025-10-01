@@ -29,6 +29,7 @@ Imports:
     rlang,
     scales,
     shiny,
+    shinyjs,
     stringr,
     tibble,
     tidyr,
