@@ -25,6 +25,7 @@ Imports:
     gt,
     htmltools,
     purrr,
+    reactable,
     rlang,
     scales,
     shiny,
