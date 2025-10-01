@@ -47,7 +47,7 @@ icb_ui <- function(id) {
           title = "% change by service",
           value = "service",
           shiny::htmlOutput(ns("service_paragraph")),
-          shiny::plotOutput(ns("percent_change_by_service"))
+          reactable::reactableOutput(ns("percent_change_by_service_table"))
         ),
         bslib::nav_panel(
           title = "Population usage rate",
@@ -142,6 +142,13 @@ icb_server <- function(id) {
     })
     output$percent_change_by_service <- shiny::renderPlot({
       plot_percent_change_by_service(
+        get_icb_data(),
+        measure = input$measure,
+        horizon = input$horizon
+      )
+    })
+    output$percent_change_by_service_table <- reactable::renderReactable({
+      render_percent_change_by_service_table(
         get_icb_data(),
         measure = input$measure,
         horizon = input$horizon
