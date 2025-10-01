@@ -223,39 +223,13 @@ plot_percent_change_by_service <- function(icb_data, measure, horizon) {
     "% change in {tolower(measure)} between 2022/23 and horizon year"
   )
   light_blue <- "#5881c1"
-  list(get_all_national_data(measure), icb_data) |>
-    purrr::map(pluck_service_data) |>
-    rlang::set_names(c("England", icb_data[["icb22nm"]])) |>
-    dplyr::bind_rows(.id = "type") |>
-    dplyr::filter(.data$fin_year %in% c("2022_23", horizon)) |>
+  prepare_service_data(icb_data, measure, horizon) |>
     dplyr::mutate(
-      dplyr::across("type", forcats::fct_inorder),
-      dplyr::across("service", \(x) tidyr::replace_na(x, "Not recorded")),
-      dplyr::across("service", \(x) sub(" Service", "", x)),
-      dplyr::across("service", \(x) sub("Adult's", "Adults", x)),
-      dplyr::across("service", \(x) sub("Children's", "Children", x))
-    ) |>
-    dplyr::summarise(
-      value = sum(.data[["projected_count"]]),
-      .by = c("type", "fin_year", "service")
-    ) |>
-    # Introduces NAs, which we can then use to remove services from the chart
-    # completely if the ICB value is missing.
-    tidyr::complete(.data$type, .data$fin_year, .data$service) |>
-    dplyr::filter(!any(is.na(.data$value)), .by = "service") |>
-    tidyr::pivot_wider(names_from = "fin_year", names_prefix = "yr_") |>
-    dplyr::mutate(
-      pct_change = (.data[[glue::glue("yr_{horizon}")]] -
-        .data[["yr_2022_23"]]) /
-        .data[["yr_2022_23"]],
-      .keep = "unused"
-    ) |>
-    dplyr::mutate(
-      type_ind = dplyr::if_else(.data$type == "England", 1L, 0L),
-      pct_change_mod = .data$pct_change * .data$type_ind,
+      type_ind = dplyr::if_else(.data[["type"]] == "England", 1L, 0L),
+      pct_change_mod = .data[["pct_change"]] * .data[["type_ind"]],
       dplyr::across("service", \(x) {
-        forcats::fct_reorder(x, .data$pct_change_mod, .na_rm = FALSE)
-      }),
+        forcats::fct_reorder(x, .data[["pct_change_mod"]], .na_rm = FALSE)
+      })
     ) |>
     ggplot2::ggplot(ggplot2::aes(.data$pct_change, .data$service)) +
     ggplot2::geom_col(
@@ -272,4 +246,33 @@ plot_percent_change_by_service <- function(icb_data, measure, horizon) {
     ) +
     su_chart_theme() +
     ggplot2::theme(axis.text.y = ggplot2::element_text(size = 14))
+}
+prepare_service_data <- function(icb_data, measure, horizon) {
+  list(get_all_national_data(measure), icb_data) |>
+    purrr::map(pluck_service_data) |>
+    rlang::set_names(c("England", icb_data[["icb22nm"]])) |>
+    dplyr::bind_rows(.id = "type") |>
+    dplyr::filter(.data[["fin_year"]] %in% c("2022_23", horizon)) |>
+    dplyr::mutate(
+      dplyr::across("type", forcats::fct_inorder),
+      dplyr::across("service", \(x) tidyr::replace_na(x, "Not recorded")),
+      dplyr::across("service", \(x) sub(" Service", "", x)),
+      dplyr::across("service", \(x) sub("Adult's", "Adults", x)),
+      dplyr::across("service", \(x) sub("Children's", "Children", x))
+    ) |>
+    dplyr::summarise(
+      value = sum(.data[["projected_count"]]),
+      .by = c("type", "fin_year", "service")
+    ) |>
+    # Introduces NAs, which we can then use to remove services from the chart
+    # completely if the ICB value is missing.
+    tidyr::complete(.data[["type"]], .data[["fin_year"]], .data[["service"]]) |>
+    dplyr::filter(!any(is.na(.data[["value"]])), .by = "service") |>
+    tidyr::pivot_wider(names_from = "fin_year", names_prefix = "yr_") |>
+    dplyr::mutate(
+      pct_change = (.data[[glue::glue("yr_{horizon}")]] -
+        .data[["yr_2022_23"]]) /
+        .data[["yr_2022_23"]],
+      .keep = "unused"
+    )
 }
