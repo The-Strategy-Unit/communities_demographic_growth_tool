@@ -66,10 +66,6 @@ icb_ui <- function(id) {
           value = "dq",
           shiny::htmlOutput(ns("data_quality_paragraph")),
           gt::gt_output(ns("data_quality_summary_table"))
-        ),
-        footer = bslib::card_body(
-          fill = FALSE,
-          shiny::includeText(app_sys("www/warning-note.txt"))
         )
       )
     )
