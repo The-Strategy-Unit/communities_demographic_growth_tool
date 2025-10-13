@@ -46,6 +46,10 @@ consistent_subs <- dplyr::tbl(
 
 # COMMAND ----------
 
+
+
+# COMMAND ----------
+
 # DBTITLE 1,helper functions
 db_vol <- "/Volumes/strategyunit/csds_fb/cdgt_rds_files"
 db_write_rds <- \(x, f) readr::write_rds(x, glue::glue("{db_vol}/{f}"))
@@ -670,8 +674,8 @@ icb_patients_final <- icb_patients_count_by_service |>
   ) |>
   tidyr::unnest("data") |>
   # Currently for the tool we don't need any age breakdown of data for each
-  # service, so we can simplify the data by summing across patient counts
-  # across all ages.
+  # service, so we can simplify the data by summing patient counts across
+  # all ages
   dplyr::summarise(
     dplyr::across("projected_count", sum),
     .by = tidyselect::all_of(c(icb_cols, sv, "fin_year"))
@@ -713,8 +717,8 @@ nat_patients_final <- nat_patients_count_by_service |>
   )) |>
   tidyr::unnest("data") |>
   # Currently for the tool we don't need any age breakdown of data for each
-  # service, so we can simplify the data by summing across patient counts
-  # across all ages.
+  # service, so we can simplify the data by summing patient counts across
+  # all ages
   dplyr::summarise(
     dplyr::across("projected_count", sum),
     .by = tidyselect::all_of(c(sv, "fin_year"))
@@ -777,8 +781,8 @@ icb_contacts_final <- icb_contacts_count |>
   )) |>
   tidyr::unnest("data") |>
   # Currently for the tool we don't need any age breakdown of data for each
-  # service, so we can simplify the data by summing across patient counts
-  # across all ages.
+  # service, so we can simplify the data by summing contact counts across
+  # all ages
   dplyr::summarise(
     dplyr::across("projected_count", sum),
     .by = tidyselect::all_of(c(icb_cols, sv, "fin_year"))
@@ -814,8 +818,8 @@ nat_contacts_final <- nat_contacts_count |>
   )) |>
   tidyr::unnest("data") |>
   # Currently for the tool we don't need any age breakdown of data for each
-  # service, so we can simplify the data by summing across patient counts
-  # across all ages.
+  # service, so we can simplify the data by summing contact counts across
+  # all ages
   dplyr::summarise(
     dplyr::across("projected_count", sum),
     .by = tidyselect::all_of(c(sv, "fin_year"))
