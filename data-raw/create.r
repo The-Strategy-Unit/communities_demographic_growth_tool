@@ -173,7 +173,7 @@ icb_popn_fy_projected <- lad_proportion_by_icb |>
     relationship = "many-to-many"
   ) |>
   dplyr::mutate(
-    across("fin_year_popn", \(x) x * proportion),
+    dplyr::across("fin_year_popn", \(x) x * proportion),
     .keep = "unused"
   ) |>
   dplyr::summarise(
@@ -234,6 +234,7 @@ csds_data_tidy <- csds_data_init |>
   ) |>
   dplyr::left_join(lsoa11_lad18_lookup_eng, "lsoa11cd") |>
   dbplyr::window_order(.data$contact_date) |>
+  # `.by` doesn't work with tidyr::fill on databricks, so group
   dplyr::group_by(.data$patient_id) |>
   tidyr::fill(
     c("icb22cdh", "icb22nm", "age_int", "gender_cat", "lad18cd"),
